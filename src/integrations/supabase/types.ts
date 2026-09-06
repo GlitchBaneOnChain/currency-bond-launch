@@ -70,16 +70,19 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          wallet_address: string | null
         }
         Insert: {
           created_at?: string
           display_name?: string
           id: string
+          wallet_address?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string
           id?: string
+          wallet_address?: string | null
         }
         Relationships: []
       }
@@ -193,6 +196,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallet_challenges: {
+        Row: {
+          address: string
+          created_at: string
+          nonce: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          nonce: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          nonce?: string
+        }
+        Relationships: []
       }
     }
     Views: {
