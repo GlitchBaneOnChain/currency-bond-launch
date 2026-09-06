@@ -16,6 +16,8 @@ import { launchToken } from "@/lib/account.functions";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/launch")({
+  validateSearch: (search: Record<string, unknown>): { pair?: string } =>
+    typeof search["pair"] === "string" ? { pair: search["pair"] } : {},
   head: () => ({
     meta: [
       { title: "Launch a token on Bankpad" },
@@ -38,7 +40,8 @@ function LaunchPage() {
   const [name, setName] = useState("");
   const [ticker, setTicker] = useState("");
   const [desc, setDesc] = useState("");
-  const [pair, setPair] = useState("USD");
+  const search = Route.useSearch();
+  const [pair, setPair] = useState(search.pair ?? "USD");
   const [tax, setTax] = useState(1);
   const [logo, setLogo] = useState("🏦");
   const [website, setWebsite] = useState("");
