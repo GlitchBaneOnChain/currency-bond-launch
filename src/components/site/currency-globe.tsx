@@ -60,6 +60,7 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
   }, [features.length]);
 
   const supported = (f: Feature | null) => currencyForCountry(f?.properties.iso);
+  const hoveredCode = supported(hovered);
 
   return (
     <div ref={wrap} className="absolute inset-0 overflow-hidden">
@@ -121,6 +122,23 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           }}
         />
       </div>
+
+      {hoveredCode && (
+        <div className="animate-fade-in pointer-events-none absolute left-4 top-4 flex items-center gap-3 rounded-2xl border border-primary/40 bg-background/80 px-4 py-3 backdrop-blur-xl sm:left-8 sm:top-8">
+          <span className="text-4xl leading-none">{currency(hoveredCode).flag}</span>
+          <div className="text-left">
+            <p className="text-sm font-semibold">{hovered?.properties.name}</p>
+            <p className="num text-xs text-primary">
+              {hoveredCode} {currency(hoveredCode).symbol} pair
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {(liveByPair[hoveredCode] ?? 0) > 0
+                ? `${liveByPair[hoveredCode]} live, click to view`
+                : "Click to launch the first coin"}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
