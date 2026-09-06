@@ -19,6 +19,11 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [hovered, setHovered] = useState<Feature | null>(null);
 
+  const globeMaterial = useMemo(
+    () => new MeshPhongMaterial({ color: "#04140b", transparent: true, opacity: 0.92 }),
+    [],
+  );
+
   const liveByPair = useMemo(() => {
     const map: Record<string, number> = {};
     for (const t of tokens) map[t.pair] = (map[t.pair] ?? 0) + 1;
