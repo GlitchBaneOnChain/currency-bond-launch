@@ -42,6 +42,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: safeNext(next), replace: true });
@@ -52,7 +53,7 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -61,7 +62,12 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. You are signed in.");
+        if (!data.session) {
+          setCheckEmail(true);
+          toast.success("Account created. Confirm your email to finish.");
+        } else {
+          toast.success("Account created. You are signed in.");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -90,6 +96,23 @@ function AuthPage() {
     <div className="min-h-screen">
       <Navbar />
       <section className="mx-auto flex max-w-md flex-col px-4 py-16 sm:px-6">
+        {checkEmail ? (
+          <div className="glass-panel rounded-2xl border p-8 text-center">
+            <h1 className="text-2xl font-bold">Confirm your email</h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              We sent a confirmation link to {email}. Open it, then come back and sign in to launch and trade.
+            </p>
+            <Button
+              className="mt-6 w-full bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
+              onClick={() => {
+                setCheckEmail(false);
+                setMode("signin");
+              }}
+            >
+              Back to sign in
+            </Button>
+          </div>
+        ) : (
         <div className="glass-panel rounded-2xl border p-6 sm:p-8">
           <h1 className="text-2xl font-bold">{mode === "signin" ? "Sign in to Bankpad" : "Create your account"}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -162,6 +185,7 @@ function AuthPage() {
             </button>
           </p>
         </div>
+        )}
         <Link to="/explore" className="mt-6 text-center text-sm text-muted-foreground hover:text-foreground">
           Browse launches without an account
         </Link>
