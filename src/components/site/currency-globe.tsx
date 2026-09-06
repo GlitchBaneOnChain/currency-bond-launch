@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import Globe, { type GlobeMethods } from "react-globe.gl";
+import { MousePointerClick } from "lucide-react";
 import { currencyForCountry } from "@/lib/country-currency";
 import { currency, type TokenView } from "@/lib/market";
 
