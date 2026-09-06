@@ -1,22 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { TokenCard } from "@/components/site/token-card";
 import { Input } from "@/components/ui/input";
-import { CURRENCIES, TOKENS } from "@/lib/mock-data";
+import { CURRENCIES, toTokenView } from "@/lib/market";
+import { listTokens } from "@/lib/market.functions";
+
+const exploreQuery = queryOptions({
+  queryKey: ["tokens"],
+  queryFn: () => listTokens(),
+});
 
 export const Route = createFileRoute("/explore")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(exploreQuery),
   head: () => ({
     meta: [
-      { title: "Explore launches — Bankpad" },
+      { title: "Explore launches on Bankpad" },
       {
         name: "description",
         content:
-          "Browse every Bankpad launch by country currency, graduation status, volume and age. PEPE / USD, DOGE / EUR and more.",
+          "Browse every Bankpad launch by country currency, graduation status, volume and age.",
       },
-      { property: "og:title", content: "Explore launches — Bankpad" },
+      { property: "og:title", content: "Explore launches on Bankpad" },
       {
         property: "og:description",
         content: "Filter all Bankpad tokens by currency pair, graduation status and volume.",
@@ -30,13 +38,15 @@ type Status = "all" | "graduated" | "curve";
 type Sort = "newest" | "volume" | "marketcap" | "progress";
 
 function Explore() {
+  const { data } = useSuspenseQuery(exploreQuery);
+  const all = useMemo(() => data.tokens.map(toTokenView), [data]);
   const [q, setQ] = useState("");
   const [pair, setPair] = useState("ALL");
   const [status, setStatus] = useState<Status>("all");
   const [sort, setSort] = useState<Sort>("newest");
 
   const list = useMemo(() => {
-    let out = TOKENS.filter((t) => {
+    let out = all.filter((t) => {
       if (pair !== "ALL" && t.pair !== pair) return false;
       if (status === "graduated" && !t.graduated) return false;
       if (status === "curve" && t.graduated) return false;
@@ -47,10 +57,10 @@ function Explore() {
       if (sort === "volume") return b.volume24h - a.volume24h;
       if (sort === "marketcap") return b.marketCap - a.marketCap;
       if (sort === "progress") return b.progress - a.progress;
-      return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     return out;
-  }, [q, pair, status, sort]);
+  }, [all, q, pair, status, sort]);
 
   return (
     <div className="min-h-screen">
@@ -60,7 +70,9 @@ function Explore() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <h1 className="text-3xl font-bold sm:text-4xl">Explore all launches</h1>
           <p className="mt-2 text-muted-foreground">
-            {TOKENS.length} coins across {CURRENCIES.length} national currencies.
+            {all.length === 0
+              ? `No coins yet. ${CURRENCIES.length} national currencies are ready for the first launch.`
+              : `${all.length} ${all.length === 1 ? "coin" : "coins"} across ${CURRENCIES.length} national currencies.`}
           </p>
         </div>
       </section>
@@ -119,8 +131,14 @@ function Explore() {
 
         {list.length === 0 ? (
           <div className="glass-soft mt-10 rounded-2xl border border-dashed py-20 text-center">
-            <p className="font-semibold">No launches match those filters</p>
-            <p className="mt-1 text-sm text-muted-foreground">Try a different currency or clear the search.</p>
+            <p className="font-semibold">
+              {all.length === 0 ? "No coins have launched yet" : "No launches match those filters"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {all.length === 0
+                ? "Head to the launch page to mint the very first Bankpad coin."
+                : "Try a different currency or clear the search."}
+            </p>
           </div>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

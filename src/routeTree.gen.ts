@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as LaunchRouteImport } from './routes/launch'
@@ -18,6 +19,11 @@ import { Route as TokenAddressRouteImport } from './routes/token.$address'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -43,6 +49,7 @@ const TokenAddressRoute = TokenAddressRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/launch': typeof LaunchRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/launch': typeof LaunchRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/launch': typeof LaunchRoute
@@ -65,15 +74,23 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/explore' | '/launch' | '/token/$address'
+  fullPaths:
+    '/' | '/auth' | '/dashboard' | '/explore' | '/launch' | '/token/$address'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/explore' | '/launch' | '/token/$address'
+  to: '/' | '/auth' | '/dashboard' | '/explore' | '/launch' | '/token/$address'
   id:
-    '__root__' | '/' | '/dashboard' | '/explore' | '/launch' | '/token/$address'
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/explore'
+    | '/launch'
+    | '/token/$address'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   ExploreRoute: typeof ExploreRoute
   LaunchRoute: typeof LaunchRoute
@@ -87,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -122,6 +146,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   ExploreRoute: ExploreRoute,
   LaunchRoute: LaunchRoute,
