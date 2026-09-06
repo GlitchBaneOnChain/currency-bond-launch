@@ -15,13 +15,13 @@ import { signInWithWallet } from "@/lib/wallet-client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in to Bankpad" },
+      { title: "Connect your wallet to Bankpad" },
       {
         name: "description",
         content:
           "Create your Bankpad account to launch a coin paired with a country currency, trade the bonding curve and claim creator fees.",
       },
-      { property: "og:title", content: "Sign in to Bankpad" },
+      { property: "og:title", content: "Connect your wallet to Bankpad" },
       { property: "og:description", content: "Create an account to launch and trade currency paired coins." },
     ],
   }),

@@ -297,7 +297,7 @@ function LaunchPage() {
             ) : user ? (
               `Launch ${ticker || "token"} / ${c.code}`
             ) : (
-              "Sign in to launch"
+              "Connect wallet to launch"
             )}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
