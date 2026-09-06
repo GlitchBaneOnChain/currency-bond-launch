@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Coins, Download, Landmark, Lock, TrendingUp } from "lucide-react";
+import { ArrowRight, Coins, Landmark, Lock, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { TokenCard } from "@/components/site/token-card";
