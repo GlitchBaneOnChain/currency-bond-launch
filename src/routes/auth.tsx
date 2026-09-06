@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -10,17 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { useAuth } from "@/hooks/useAuth";
+import { signInWithWallet } from "@/lib/wallet-client";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in to Bankpad" },
+      { title: "Connect your wallet to Bankpad" },
       {
         name: "description",
         content:
           "Create your Bankpad account to launch a coin paired with a country currency, trade the bonding curve and claim creator fees.",
       },
-      { property: "og:title", content: "Sign in to Bankpad" },
+      { property: "og:title", content: "Connect your wallet to Bankpad" },
       { property: "og:description", content: "Create an account to launch and trade currency paired coins." },
     ],
   }),
@@ -43,6 +44,19 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [walletBusy, setWalletBusy] = useState(false);
+
+  async function connectWallet() {
+    setWalletBusy(true);
+    try {
+      const { displayName } = await signInWithWallet();
+      toast.success(`Connected as ${displayName}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not connect that wallet");
+    } finally {
+      setWalletBusy(false);
+    }
+  }
 
   useEffect(() => {
     if (!loading && user) navigate({ to: safeNext(next), replace: true });
@@ -114,23 +128,38 @@ function AuthPage() {
           </div>
         ) : (
         <div className="glass-panel rounded-2xl border p-6 sm:p-8">
-          <h1 className="text-2xl font-bold">{mode === "signin" ? "Sign in to Bankpad" : "Create your account"}</h1>
+          <h1 className="text-2xl font-bold">Connect to Bankpad</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            An account lets you launch coins, trade the curve and claim your creator fees.
+            Connect your wallet to launch coins, trade the curve and claim your creator fees.
           </p>
 
           <Button
             type="button"
+            disabled={walletBusy}
+            onClick={connectWallet}
+            className="mt-6 w-full bg-[image:var(--gradient-primary)] text-base font-semibold text-primary-foreground"
+          >
+            {walletBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Wallet className="mr-2 size-4" />}
+            Connect wallet
+          </Button>
+          <p className="mt-2 text-center text-[11px] text-muted-foreground">
+            Works with MetaMask, Rabby, Coinbase Wallet and other browser wallets. You sign a free message, nothing moves.
+          </p>
+
+          <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> or use email <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <Button
+            type="button"
             variant="outline"
-            className="glass-control mt-6 w-full"
+            className="glass-control w-full"
             onClick={google}
           >
             Continue with Google
           </Button>
 
-          <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or email <span className="h-px flex-1 bg-border" />
-          </div>
+          <div className="my-5 h-px bg-border" />
 
           <form onSubmit={submit} className="space-y-4">
             {mode === "signup" && (

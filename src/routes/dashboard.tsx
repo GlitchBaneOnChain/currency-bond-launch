@@ -52,7 +52,7 @@ function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">Your dashboard</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {user ? account?.displayName ?? "Signed in" : "Sign in to see your launches and positions"}
+              {user ? account?.displayName ?? "Signed in" : "Connect your wallet to see your launches and positions"}
             </p>
           </div>
           <Button asChild className="bg-primary font-semibold text-primary-foreground">
@@ -66,7 +66,7 @@ function Dashboard() {
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {!user && !loading ? (
           <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
-            <p className="text-lg font-semibold">Sign in to open your dashboard</p>
+            <p className="text-lg font-semibold">Connect your wallet to open your dashboard</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               Your launches, balances, positions and creator fees all live here.
             </p>
@@ -75,7 +75,7 @@ function Dashboard() {
               className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
             >
               <Link to="/auth" search={{ next: "/dashboard" }}>
-                Sign in
+                Connect wallet
               </Link>
             </Button>
           </div>

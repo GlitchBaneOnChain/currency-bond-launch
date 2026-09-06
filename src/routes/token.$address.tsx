@@ -376,7 +376,7 @@ function TokenPage() {
                   <Loader2 className="mr-2 size-4 animate-spin" /> Confirming
                 </>
               ) : !user ? (
-                "Sign in to trade"
+                "Connect wallet to trade"
               ) : (
                 `${side === "buy" ? "Buy" : "Sell"} ${token.ticker}`
               )}
