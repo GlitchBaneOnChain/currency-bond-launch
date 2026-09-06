@@ -65,9 +65,9 @@ function Home() {
       </div>
 
       {/* Hero */}
-      <section className="vault-surface section-glow relative min-h-[650px] overflow-hidden">
+      <section className="vault-surface section-glow relative min-h-[780px] overflow-hidden md:min-h-[850px]">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="pointer-events-none absolute inset-0 opacity-90">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[62%] opacity-90 md:h-[58%]">
           <ClientOnly>
             <Suspense fallback={null}>
               <div className="pointer-events-auto absolute inset-0">
