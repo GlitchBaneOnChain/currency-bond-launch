@@ -165,7 +165,7 @@ function LaunchPage() {
             </Field>
           </Panel>
 
-          <div className="rounded-2xl border border-border/70 bg-card p-5">
+          <div className="glass-soft rounded-2xl border p-5">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <Info className="size-4 text-gold" /> Fees
             </p>
@@ -182,7 +182,7 @@ function LaunchPage() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Live preview
           </p>
-          <div className="vault-surface rounded-2xl border border-border/70 p-5">
+          <div className="glass-panel rounded-2xl border p-5">
             <div className="flex items-start gap-3">
               <div className="relative">
                 <span className="flex size-14 items-center justify-center rounded-xl bg-secondary text-3xl">
@@ -259,7 +259,7 @@ function LaunchPage() {
 
 function Panel({ title, step, children }: { title: string; step: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6">
+    <div className="glass-panel rounded-2xl border p-5 sm:p-6">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-lg font-semibold">{title}</h2>
         <span className="num text-xs text-muted-foreground">{step}</span>

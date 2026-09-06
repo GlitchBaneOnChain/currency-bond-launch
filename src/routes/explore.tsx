@@ -66,7 +66,7 @@ function Explore() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="glass-panel rounded-2xl border p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -118,7 +118,7 @@ function Explore() {
         </div>
 
         {list.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-dashed border-border py-20 text-center">
+          <div className="glass-soft mt-10 rounded-2xl border border-dashed py-20 text-center">
             <p className="font-semibold">No launches match those filters</p>
             <p className="mt-1 text-sm text-muted-foreground">Try a different currency or clear the search.</p>
           </div>

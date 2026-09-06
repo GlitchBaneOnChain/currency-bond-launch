@@ -91,7 +91,7 @@ function TokenPage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-6">
           {/* Chart */}
-          <div className="rounded-2xl border border-border/70 bg-card p-5">
+          <div className="glass-panel rounded-2xl border p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-semibold">Price</h2>
               <div className="flex gap-1">
@@ -139,7 +139,7 @@ function TokenPage() {
           </div>
 
           {/* Graduation */}
-          <div className="rounded-2xl border border-border/70 bg-card p-5">
+          <div className="glass-panel rounded-2xl border p-5">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">
                 {token.graduated ? "Locked Uniswap V4 pool" : "Graduation progress"}
@@ -168,7 +168,7 @@ function TokenPage() {
           </div>
 
           {/* About */}
-          <div className="rounded-2xl border border-border/70 bg-card p-5">
+          <div className="glass-panel rounded-2xl border p-5">
             <h2 className="font-semibold">About {token.name}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{token.description}</p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -184,7 +184,7 @@ function TokenPage() {
 
         {/* Trade panel */}
         <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="vault-surface rounded-2xl border border-border/70 p-5">
+          <div className="glass-panel rounded-2xl border p-5">
             <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary/60 p-1">
               {(["buy", "sell"] as const).map((s) => (
                 <button
@@ -270,7 +270,7 @@ function TokenPage() {
           </div>
 
           {/* Creator fees */}
-          <div className="rounded-2xl border border-gold/30 bg-card p-5">
+          <div className="glass-panel rounded-2xl border border-gold/30 p-5">
             <h2 className="font-semibold">Creator fees</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               Paid in {c.flag} {c.code} to the launch wallet.
@@ -307,7 +307,7 @@ function TokenPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-4">
+    <div className="glass-panel rounded-2xl border p-4">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="num mt-1 text-lg font-semibold">{value}</p>
     </div>
