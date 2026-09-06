@@ -89,7 +89,7 @@ function Home() {
               bonding curve do the rest.
             </p>
             <p className="mx-auto mt-4 max-w-md text-sm text-primary/90">
-              Spin the globe and pick a country to see its currency pair.
+              Spin the globe, point to a country, then click it to launch or explore its currency pair.
             </p>
             <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
