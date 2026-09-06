@@ -291,7 +291,7 @@ export function tokenByAddress(address: string): Token | undefined {
   return TOKENS.find((t) => t.address.toLowerCase() === address.toLowerCase());
 }
 
-export const MY_TOKENS = [TOKENS[0], TOKENS[4], TOKENS[8]];
+export const MY_TOKENS: Token[] = [TOKENS[0], TOKENS[4], TOKENS[8]].filter(Boolean) as Token[];
 
 export function priceSeries(seed: number, points = 60) {
   const out: { t: number; p: number }[] = [];
