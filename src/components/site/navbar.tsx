@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Landmark, Loader2, Menu, Wallet, X } from "lucide-react";
+import { Download, Landmark, Loader2, Menu, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
@@ -51,19 +51,26 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/55 shadow-[inset_0_-1px_0_oklch(1_0_0/4%)] backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-[image:var(--gradient-gold)] text-gold-foreground">
-            <Landmark className="size-5" />
-          </span>
-          <span className="text-lg font-bold tracking-tight">
-            Bank<span className="gold-text">pad</span>
-          </span>
-          <span className="ml-1 hidden rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
-            Robinhood Chain
-          </span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-[image:var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-vault)]">
+              <Landmark className="size-5" />
+            </span>
+            <span className="text-lg font-bold tracking-tight">
+              Bank<span className="gold-text">pad</span>
+            </span>
+            <span className="ml-1 hidden rounded-full border border-border bg-card/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
+              Robinhood Chain
+            </span>
+          </Link>
+          <Button asChild variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+            <a href="/bankpad-logo.svg" download="bankpad-logo.svg" aria-label="Download Bankpad logo" title="Download logo">
+              <Download className="size-4" />
+            </a>
+          </Button>
+        </div>
 
         <nav className="hidden items-center gap-1 md:flex">
           {NAV.map((n) => (
@@ -83,18 +90,20 @@ export function Navbar() {
           <div className="hidden md:block">
             <WalletButton />
           </div>
-          <button
-            className="rounded-md p-2 text-muted-foreground md:hidden"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground md:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle menu"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          </Button>
         </div>
       </div>
 
       {open && (
-        <div className="border-t border-border/60 bg-background px-4 py-4 md:hidden">
+        <div className="glass-panel border-t border-border/60 px-4 py-4 md:hidden">
           <div className="flex flex-col gap-1">
             {NAV.map((n) => (
               <Link

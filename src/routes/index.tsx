@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Coins, Landmark, Lock, TrendingUp } from "lucide-react";
+import { ArrowRight, Coins, Download, Landmark, Lock, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { TokenCard } from "@/components/site/token-card";
@@ -49,7 +49,7 @@ function Home() {
         <div className="grid-ledger absolute inset-0 opacity-60" />
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
           <div className="animate-rise mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs text-muted-foreground">
+            <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-gold" /> Now open on Robinhood Chain
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-6xl">
@@ -78,11 +78,16 @@ function Home() {
               >
                 <Link to="/explore">Explore launches</Link>
               </Button>
+              <Button asChild size="lg" variant="ghost" className="w-full text-muted-foreground hover:text-foreground sm:w-auto">
+                <a href="/bankpad-logo.svg" download="bankpad-logo.svg">
+                  <Download className="mr-2 size-4" /> Download logo
+                </a>
+              </Button>
             </div>
           </div>
 
           {/* Live stats bar */}
-          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border rounded-2xl border border-border/70 bg-card/70 backdrop-blur md:grid-cols-4 md:divide-x">
+          <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border rounded-2xl border md:grid-cols-4 md:divide-x">
             <StatCell label="Total launches" value="12,481" />
             <StatCell label="Volume (all pairs)" value="$284.9M" />
             <StatCell label="Fees paid to creators" value="$6.2M" accent />
@@ -129,7 +134,7 @@ function Home() {
             {CURRENCIES.map((c) => (
               <div
                 key={c.code}
-                className="flex items-center gap-2 rounded-xl border border-border/70 bg-card px-4 py-2.5 transition-colors hover:border-gold/50"
+                className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-colors hover:border-gold/50"
               >
                 <span className="text-lg">{c.flag}</span>
                 <span className="num text-sm font-semibold">{c.code}</span>
@@ -160,7 +165,7 @@ function Home() {
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <div className="vault-surface relative overflow-hidden rounded-3xl border border-border/70 p-10 text-center md:p-16">
+        <div className="glass-panel relative overflow-hidden rounded-3xl border p-10 text-center md:p-16">
           <div className="grid-ledger absolute inset-0 opacity-50" />
           <div className="relative">
             <h2 className="text-3xl font-bold sm:text-4xl">Open your branch on Bankpad</h2>
@@ -207,7 +212,7 @@ function Step({
   body: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-6 transition-colors hover:border-primary/40">
+    <div className="glass-panel rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:border-primary/40">
       <div className="flex items-center justify-between">
         <span className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
           {icon}
