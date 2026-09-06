@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MeshPhongMaterial } from "three";
 import { useNavigate } from "@tanstack/react-router";
 import Globe, { type GlobeMethods } from "react-globe.gl";
 import { MousePointerClick } from "lucide-react";
@@ -17,6 +18,11 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
   const [size, setSize] = useState({ w: 600, h: 600 });
   const [features, setFeatures] = useState<Feature[]>([]);
   const [hovered, setHovered] = useState<Feature | null>(null);
+
+  const globeMaterial = useMemo(
+    () => new MeshPhongMaterial({ color: "#04140b", transparent: true, opacity: 0.92 }),
+    [],
+  );
 
   const liveByPair = useMemo(() => {
     const map: Record<string, number> = {};
@@ -75,13 +81,7 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           showAtmosphere
           atmosphereColor="#22c55e"
           atmosphereAltitude={0.18}
-          globeMaterial={
-            {
-              color: "#04140b",
-              transparent: true,
-              opacity: 0.92,
-            } as never
-          }
+          globeMaterial={globeMaterial as never}
           polygonsData={features}
           polygonAltitude={(d) => (d === hovered ? 0.07 : supported(d as Feature) ? 0.018 : 0.008)}
           polygonCapColor={(d) => {
