@@ -124,7 +124,7 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
       </div>
 
       {hoveredCode && (
-        <div className="animate-fade-in pointer-events-none absolute left-4 top-4 flex items-center gap-3 rounded-2xl border border-primary/40 bg-background/80 px-4 py-3 backdrop-blur-xl sm:left-8 sm:top-8">
+        <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-3 rounded-2xl border border-primary/40 bg-background/80 px-4 py-3 backdrop-blur-xl sm:left-8 sm:top-8">
           <span className="text-4xl leading-none">{currency(hoveredCode).flag}</span>
           <div className="text-left">
             <p className="text-sm font-semibold">{hovered?.properties.name}</p>
