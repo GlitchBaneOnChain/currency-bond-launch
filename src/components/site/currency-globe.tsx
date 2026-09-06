@@ -100,7 +100,6 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           onPolygonClick={(d) => {
             const f = d as Feature;
             const code = supported(f);
-            console.log("[globe] click", f?.properties?.name, code);
             if (!code) return;
             const live = liveByPair[code] ?? 0;
             if (live > 0) navigate({ to: "/explore", search: { currency: code } });
