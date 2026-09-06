@@ -65,9 +65,9 @@ function Home() {
       </div>
 
       {/* Hero */}
-      <section className="vault-surface section-glow relative min-h-[650px] overflow-hidden">
+      <section className="vault-surface section-glow relative min-h-[780px] overflow-hidden md:min-h-[860px]">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="pointer-events-none absolute inset-0 opacity-90">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[55%] opacity-90 md:h-[52%]">
           <ClientOnly>
             <Suspense fallback={null}>
               <div className="pointer-events-auto absolute inset-0">
@@ -76,7 +76,7 @@ function Home() {
             </Suspense>
           </ClientOnly>
         </div>
-        <div className="pointer-events-none relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-10 pt-40 sm:px-6 md:pb-14 md:pt-44 lg:pb-16">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
@@ -111,14 +111,16 @@ function Home() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Live stats bar */}
-          <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
-            <StatCell label="Total launches" value={stats.launches.toLocaleString()} />
-            <StatCell label="Volume traded" value={compact(stats.volume)} />
-            <StatCell label="Fees earned by creators" value={compact(stats.fees)} accent />
-            <StatCell label="Currencies supported" value={String(CURRENCIES.length)} />
-          </div>
+      {/* Live stats bar */}
+      <section className="border-b border-border/60 bg-background/45 px-4 py-6 backdrop-blur-xl sm:px-6">
+        <div className="glass-panel mx-auto grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
+          <StatCell label="Total launches" value={stats.launches.toLocaleString()} />
+          <StatCell label="Volume traded" value={compact(stats.volume)} />
+          <StatCell label="Fees earned by creators" value={compact(stats.fees)} accent />
+          <StatCell label="Currencies supported" value={String(CURRENCIES.length)} />
         </div>
       </section>
 
