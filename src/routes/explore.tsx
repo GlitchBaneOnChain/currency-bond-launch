@@ -15,6 +15,8 @@ const exploreQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/explore")({
+  validateSearch: (search: Record<string, unknown>): { currency?: string } =>
+    typeof search["currency"] === "string" ? { currency: search["currency"] } : {},
   loader: ({ context }) => context.queryClient.ensureQueryData(exploreQuery),
   head: () => ({
     meta: [
@@ -41,7 +43,8 @@ function Explore() {
   const { data } = useSuspenseQuery(exploreQuery);
   const all = useMemo(() => data.tokens.map(toTokenView), [data]);
   const [q, setQ] = useState("");
-  const [pair, setPair] = useState("ALL");
+  const search = Route.useSearch();
+  const [pair, setPair] = useState(search.currency ?? "ALL");
   const [status, setStatus] = useState<Status>("all");
   const [sort, setSort] = useState<Sort>("newest");
 
