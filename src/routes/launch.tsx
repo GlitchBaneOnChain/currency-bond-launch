@@ -44,7 +44,7 @@ function LaunchPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="border-b border-border/60 bg-vault">
+      <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <h1 className="text-3xl font-bold sm:text-4xl">Open a new coin</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
@@ -64,7 +64,7 @@ function LaunchPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Pepe Reserve"
-                  className="bg-background"
+                  className="glass-control"
                 />
               </Field>
               <Field label="Ticker">
@@ -72,7 +72,7 @@ function LaunchPage() {
                   value={ticker}
                   onChange={(e) => setTicker(e.target.value.toUpperCase().slice(0, 8))}
                   placeholder="PEPE"
-                  className="num bg-background uppercase"
+                  className="glass-control num uppercase"
                 />
               </Field>
             </div>
@@ -82,13 +82,13 @@ function LaunchPage() {
                 onChange={(e) => setDesc(e.target.value.slice(0, 280))}
                 placeholder="Tell holders what this coin stands for."
                 rows={4}
-                className="resize-none bg-background"
+                className="glass-control resize-none"
               />
               <p className="num mt-1 text-right text-[11px] text-muted-foreground">{desc.length}/280</p>
             </Field>
             <Field label="Logo">
               <div className="flex items-center gap-4">
-                <div className="flex size-16 items-center justify-center rounded-xl border border-dashed border-border bg-background text-3xl">
+                <div className="glass-control flex size-16 items-center justify-center rounded-xl border border-dashed text-3xl">
                   {logo}
                 </div>
                 <div className="flex-1">
@@ -125,7 +125,7 @@ function LaunchPage() {
                   className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
                     pair === cur.code
                       ? "border-gold/60 bg-gold/10 shadow-[var(--shadow-vault)]"
-                      : "border-border bg-background hover:border-primary/40"
+                       : "glass-control border-border hover:-translate-y-0.5 hover:border-primary/40"
                   }`}
                 >
                   <span className="text-xl">{cur.flag}</span>
@@ -141,13 +141,13 @@ function LaunchPage() {
           <Panel title="Links and creator tax" step="03">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Website">
-                <Input placeholder="https://" className="bg-background" />
+                <Input placeholder="https://" className="glass-control" />
               </Field>
               <Field label="Twitter">
-                <Input placeholder="https://x.com/" className="bg-background" />
+                <Input placeholder="https://x.com/" className="glass-control" />
               </Field>
               <Field label="Telegram">
-                <Input placeholder="https://t.me/" className="bg-background" />
+                <Input placeholder="https://t.me/" className="glass-control" />
               </Field>
             </div>
             <Field label={`Creator tax: ${tax.toFixed(1)}%`}>
@@ -182,7 +182,7 @@ function LaunchPage() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Live preview
           </p>
-          <div className="glass-panel rounded-2xl border p-5">
+          <div className="glass-panel overflow-hidden rounded-2xl border p-5">
             <div className="flex items-start gap-3">
               <div className="relative">
                 <span className="flex size-14 items-center justify-center rounded-xl bg-secondary text-3xl">
@@ -259,7 +259,7 @@ function LaunchPage() {
 
 function Panel({ title, step, children }: { title: string; step: string; children: React.ReactNode }) {
   return (
-    <div className="glass-panel rounded-2xl border p-5 sm:p-6">
+    <div className="glass-panel rounded-2xl border p-5 transition-colors hover:border-primary/30 sm:p-6">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-lg font-semibold">{title}</h2>
         <span className="num text-xs text-muted-foreground">{step}</span>

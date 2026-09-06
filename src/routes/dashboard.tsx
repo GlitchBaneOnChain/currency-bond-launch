@@ -27,7 +27,7 @@ function Dashboard() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="border-b border-border/60 bg-vault">
+      <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-12 sm:px-6">
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">Creator dashboard</h1>
@@ -91,7 +91,7 @@ function Dashboard() {
 
 function Kpi({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="glass-panel rounded-2xl border p-5">
+    <div className="glass-panel glass-interactive rounded-2xl border p-5">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={`num mt-2 text-2xl font-bold ${accent ? "gold-text" : ""}`}>{value}</p>
     </div>
@@ -103,7 +103,7 @@ function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
   const [state, setState] = useState<"idle" | "claiming" | "claimed">("idle");
 
   return (
-    <div className="glass-panel flex flex-wrap items-center gap-4 rounded-2xl border p-4 sm:p-5">
+    <div className="glass-panel flex flex-wrap items-center gap-4 rounded-2xl border p-4 transition-all hover:border-primary/35 hover:shadow-[var(--shadow-glow)] sm:p-5">
       <div className="relative">
         <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-2xl">
           {token.emoji}

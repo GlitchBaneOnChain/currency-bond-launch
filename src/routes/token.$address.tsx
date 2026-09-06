@@ -47,7 +47,7 @@ function TokenPage() {
       <Navbar />
 
       {/* Header */}
-      <section className="border-b border-border/60 bg-vault">
+      <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-5 px-4 py-8 sm:px-6">
           <div className="relative">
             <span className="flex size-16 items-center justify-center rounded-2xl bg-secondary text-4xl">
@@ -91,7 +91,7 @@ function TokenPage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-6">
           {/* Chart */}
-          <div className="glass-panel rounded-2xl border p-5">
+           <div className="glass-panel overflow-hidden rounded-2xl border p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-semibold">Price</h2>
               <div className="flex gap-1">
@@ -211,7 +211,7 @@ function TokenPage() {
                   1,204.00
                 </span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3">
+              <div className="glass-control flex items-center gap-2 rounded-xl border border-border px-3">
                 <span className="text-lg">{side === "buy" ? c.flag : token.emoji}</span>
                 <Input
                   value={amount}
@@ -228,7 +228,7 @@ function TokenPage() {
                   <button
                     key={p}
                     onClick={() => setAmount(p === "Max" ? "1204" : p)}
-                    className="num flex-1 rounded-lg border border-border bg-secondary/50 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                     className="glass-control num flex-1 rounded-lg border border-border py-1.5 text-xs text-muted-foreground transition-all hover:-translate-y-0.5 hover:text-foreground"
                   >
                     {p}
                   </button>
@@ -307,7 +307,7 @@ function TokenPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="glass-panel rounded-2xl border p-4">
+    <div className="glass-panel glass-interactive rounded-2xl border p-4">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="num mt-1 text-lg font-semibold">{value}</p>
     </div>

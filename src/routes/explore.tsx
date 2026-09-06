@@ -56,7 +56,7 @@ function Explore() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="border-b border-border/60 bg-vault">
+      <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <h1 className="text-3xl font-bold sm:text-4xl">Explore all launches</h1>
           <p className="mt-2 text-muted-foreground">
@@ -66,14 +66,14 @@ function Explore() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="glass-panel rounded-2xl border p-4">
+        <div className="glass-panel rounded-2xl border p-4 shadow-[var(--shadow-glow)]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search by name or ticker"
-              className="border-input bg-background pl-9"
+              className="glass-control border-input pl-9"
             />
           </div>
 
@@ -151,7 +151,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all hover:-translate-y-0.5 ${
         active ? on : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground"
       }`}
     >

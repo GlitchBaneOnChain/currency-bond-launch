@@ -53,7 +53,7 @@
   --background: oklch(0.16 0.028 264);
   --foreground: oklch(0.97 0.005 250);
   --vault: oklch(0.21 0.032 264);
-  --card: oklch(0.25 0.032 264 / 58%);
+  --card: oklch(0.28 0.038 264 / 48%);
   --card-foreground: oklch(0.97 0.005 250);
   --popover: oklch(0.22 0.032 264 / 86%);
   --popover-foreground: oklch(0.97 0.005 250);
@@ -76,8 +76,8 @@
   --destructive-foreground: oklch(0.98 0.005 250);
   --success: oklch(0.75 0.17 158);
   --success-foreground: oklch(0.17 0.03 264);
-  --border: oklch(0.72 0.035 250 / 18%);
-  --input: oklch(0.31 0.03 264 / 80%);
+  --border: oklch(0.78 0.04 250 / 20%);
+  --input: oklch(0.34 0.04 264 / 58%);
   --ring: oklch(0.68 0.19 253);
   --chart-1: oklch(0.68 0.19 253);
   --chart-2: oklch(0.83 0.14 87);
@@ -93,8 +93,9 @@
     linear-gradient(180deg, oklch(0.18 0.03 264) 0%, oklch(0.15 0.026 264) 100%);
   --gradient-gold: linear-gradient(135deg, oklch(0.88 0.11 92), oklch(0.75 0.15 72));
   --gradient-blue: linear-gradient(135deg, oklch(0.72 0.18 250), oklch(0.6 0.2 268));
-  --shadow-vault: 0 24px 60px -24px oklch(0.05 0.05 264 / 86%);
-  --shadow-glow: 0 0 0 1px oklch(0.68 0.19 253 / 25%), 0 18px 50px -20px oklch(0.68 0.19 253 / 55%);
+  --shadow-vault: 0 28px 80px -32px oklch(0.03 0.04 264 / 92%), 0 8px 24px -16px oklch(0.02 0.02 264 / 75%);
+  --shadow-glow: 0 0 0 1px oklch(0.68 0.19 253 / 28%), 0 20px 56px -22px oklch(0.68 0.19 253 / 62%);
+  --shadow-gold: 0 0 0 1px oklch(0.83 0.14 87 / 22%), 0 18px 50px -22px oklch(0.83 0.14 87 / 48%);
 }
 
 @layer base {
@@ -111,6 +112,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    min-width: 320px;
   }
 
   h1,
@@ -126,19 +128,40 @@
 }
 
 @utility glass-panel {
-  background: linear-gradient(145deg, oklch(0.34 0.04 260 / 52%), oklch(0.2 0.025 264 / 40%));
-  border-color: oklch(0.82 0.035 250 / 18%);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 8%), var(--shadow-vault);
-  backdrop-filter: blur(22px) saturate(135%);
-  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  position: relative;
+  background: linear-gradient(145deg, oklch(0.4 0.045 258 / 42%), oklch(0.2 0.03 264 / 34%));
+  border-color: oklch(0.86 0.035 250 / 20%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 10%), inset 0 -1px 0 oklch(0.05 0.03 264 / 30%), var(--shadow-vault);
+  backdrop-filter: blur(28px) saturate(145%);
 }
 
 @utility glass-soft {
-  background: oklch(0.29 0.032 264 / 44%);
-  border-color: oklch(0.82 0.035 250 / 14%);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 6%);
-  backdrop-filter: blur(16px) saturate(125%);
-  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  background: linear-gradient(145deg, oklch(0.38 0.04 258 / 32%), oklch(0.22 0.028 264 / 28%));
+  border-color: oklch(0.86 0.035 250 / 15%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 7%);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+@utility glass-interactive {
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 280ms ease, box-shadow 280ms ease, background-color 280ms ease;
+  &:hover {
+    transform: translateY(-4px);
+    border-color: oklch(0.72 0.16 253 / 46%);
+    box-shadow: inset 0 1px 0 oklch(1 0 0 / 13%), var(--shadow-glow);
+  }
+}
+
+@utility glass-control {
+  background: oklch(0.18 0.028 264 / 52%);
+  border-color: oklch(0.86 0.035 250 / 18%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 5%);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+@utility section-glow {
+  background-image:
+    radial-gradient(circle at 18% 10%, oklch(0.68 0.19 253 / 12%), transparent 30rem),
+    radial-gradient(circle at 82% 80%, oklch(0.83 0.14 87 / 7%), transparent 28rem);
 }
 
 @utility gold-text {
@@ -185,4 +208,15 @@
 
 @utility animate-rise {
   animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

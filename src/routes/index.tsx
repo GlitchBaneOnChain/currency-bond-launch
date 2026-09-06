@@ -33,7 +33,7 @@ function Home() {
       <Navbar />
 
       {/* Ticker */}
-      <div className="overflow-hidden border-b border-border/60 bg-vault py-2">
+      <div className="overflow-hidden border-b border-border/60 bg-background/45 py-2 backdrop-blur-xl">
         <div className="animate-ticker flex w-max gap-8 whitespace-nowrap px-4">
           {[...CURRENCIES, ...CURRENCIES].map((c, i) => (
             <span key={i} className="num text-xs text-muted-foreground">
@@ -45,9 +45,9 @@ function Home() {
       </div>
 
       {/* Hero */}
-      <section className="vault-surface relative overflow-hidden">
+      <section className="vault-surface section-glow relative min-h-[650px] overflow-hidden">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-gold" /> Now open on Robinhood Chain
@@ -64,7 +64,7 @@ function Home() {
               <Button
                 asChild
                 size="lg"
-                className="w-full bg-[image:var(--gradient-gold)] text-base font-semibold text-gold-foreground shadow-[var(--shadow-vault)] transition-transform hover:scale-[1.03] sm:w-auto"
+                className="w-full bg-[image:var(--gradient-gold)] text-base font-semibold text-gold-foreground shadow-[var(--shadow-gold)] transition-all hover:-translate-y-0.5 hover:scale-[1.02] sm:w-auto"
               >
                 <Link to="/launch">
                   Launch Token <ArrowRight className="ml-2 size-4" />
@@ -74,7 +74,7 @@ function Home() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="w-full border-border bg-card/60 text-base sm:w-auto"
+                className="glass-control w-full border-border text-base transition-all hover:-translate-y-0.5 hover:border-primary/40 sm:w-auto"
               >
                 <Link to="/explore">Explore launches</Link>
               </Button>
@@ -82,7 +82,7 @@ function Home() {
           </div>
 
           {/* Live stats bar */}
-          <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border rounded-2xl border md:grid-cols-4 md:divide-x">
+          <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
             <StatCell label="Total launches" value="12,481" />
             <StatCell label="Volume (all pairs)" value="$284.9M" />
             <StatCell label="Fees paid to creators" value="$6.2M" accent />
@@ -92,7 +92,7 @@ function Home() {
       </section>
 
       {/* How it works */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+      <section className="section-glow mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <h2 className="text-center text-3xl font-bold sm:text-4xl">How Bankpad works</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
           Three steps from an idea to a locked, liquid market denominated in the currency you choose.
@@ -120,7 +120,7 @@ function Home() {
       </section>
 
       {/* Currency grid */}
-      <section className="border-y border-border/60 bg-vault py-14">
+      <section className="border-y border-border/60 bg-vault/70 py-14 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-center text-sm font-semibold uppercase tracking-[0.25em] text-muted-foreground">
             Available currency pairs
@@ -129,7 +129,7 @@ function Home() {
             {CURRENCIES.map((c) => (
               <div
                 key={c.code}
-                className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-colors hover:border-gold/50"
+                className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-[var(--shadow-gold)]"
               >
                 <span className="text-lg">{c.flag}</span>
                 <span className="num text-sm font-semibold">{c.code}</span>
@@ -160,7 +160,7 @@ function Home() {
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <div className="glass-panel relative overflow-hidden rounded-3xl border p-10 text-center md:p-16">
+        <div className="glass-panel section-glow relative overflow-hidden rounded-3xl border p-10 text-center md:p-16">
           <div className="grid-ledger absolute inset-0 opacity-50" />
           <div className="relative">
             <h2 className="text-3xl font-bold sm:text-4xl">Open your branch on Bankpad</h2>
@@ -207,7 +207,7 @@ function Step({
   body: string;
 }) {
   return (
-    <div className="glass-panel rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:border-primary/40">
+    <div className="glass-panel glass-interactive rounded-2xl border p-6">
       <div className="flex items-center justify-between">
         <span className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
           {icon}

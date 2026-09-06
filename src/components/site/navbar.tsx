@@ -51,10 +51,10 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/55 shadow-[inset_0_-1px_0_oklch(1_0_0/4%)] backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/45 shadow-[inset_0_-1px_0_oklch(1_0_0/6%),0_12px_40px_-28px_oklch(0.02_0.02_264/85%)] backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-[image:var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-vault)]">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-[image:var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-gold)] transition-transform duration-300 hover:rotate-3 hover:scale-105">
             <Landmark className="size-5" />
           </span>
           <span className="text-lg font-bold tracking-tight">
@@ -72,7 +72,7 @@ export function Navbar() {
               to={n.to}
               activeProps={{ className: "bg-secondary text-foreground" }}
               inactiveProps={{ className: "text-muted-foreground" }}
-              className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-foreground"
+              className="rounded-md px-3 py-2 text-sm font-medium transition-all hover:bg-secondary/60 hover:text-foreground"
             >
               {n.label}
             </Link>
