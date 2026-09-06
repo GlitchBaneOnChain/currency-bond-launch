@@ -1,24 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight, Coins, Landmark, Lock, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { TokenCard } from "@/components/site/token-card";
 import { Button } from "@/components/ui/button";
-import { CURRENCIES, TOKENS } from "@/lib/mock-data";
+import { CURRENCIES, compact, toTokenView } from "@/lib/market";
+import { getPlatformStats, listTokens } from "@/lib/market.functions";
+
+const homeQuery = queryOptions({
+  queryKey: ["home"],
+  queryFn: async () => {
+    const [{ tokens }, stats] = await Promise.all([listTokens(), getPlatformStats()]);
+    return { tokens, stats };
+  },
+});
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   head: () => ({
     meta: [
-      { title: "Bankpad — Launch coins paired with real country currencies" },
+      { title: "Bankpad, launch coins paired with real country currencies" },
       {
         name: "description",
         content:
           "Bankpad is the memecoin launchpad on Robinhood Chain where every token is paired with a real country currency: USD, EUR, GBP, JPY, INR and more.",
       },
-      { property: "og:title", content: "Bankpad — Launch coins paired with real country currencies" },
+      { property: "og:title", content: "Bankpad, launch coins paired with real country currencies" },
       {
         property: "og:description",
-        content: "Bonding curve to locked Uniswap V4 pool. Every coin paired to a national currency.",
+        content: "Bonding curve to locked liquidity. Every coin paired to a national currency.",
       },
     ],
   }),
@@ -26,7 +37,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const trending = TOKENS.slice(0, 6);
+  const { data } = useSuspenseQuery(homeQuery);
+  const tokens = data.tokens.map(toTokenView);
+  const trending = [...tokens].sort((a, b) => b.volume24h - a.volume24h).slice(0, 6);
+  const stats = data.stats;
 
   return (
     <div className="min-h-screen">
@@ -53,8 +67,7 @@ function Home() {
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-6xl">
-              Launch coins paired with{" "}
-               <span className="brand-text">real country currencies</span>
+              Launch coins paired with <span className="brand-text">real country currencies</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
               Bankpad is a launchpad built like a bank. Pick a national currency, mint your coin, and let the
@@ -83,10 +96,10 @@ function Home() {
 
           {/* Live stats bar */}
           <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
-            <StatCell label="Total launches" value="12,481" />
-            <StatCell label="Volume (all pairs)" value="$284.9M" />
-            <StatCell label="Fees paid to creators" value="$6.2M" accent />
-            <StatCell label="Currencies supported" value="12" />
+            <StatCell label="Total launches" value={stats.launches.toLocaleString()} />
+            <StatCell label="Volume traded" value={compact(stats.volume)} />
+            <StatCell label="Fees earned by creators" value={compact(stats.fees)} accent />
+            <StatCell label="Currencies supported" value={String(CURRENCIES.length)} />
           </div>
         </div>
       </section>
@@ -95,14 +108,14 @@ function Home() {
       <section className="section-glow mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <h2 className="text-center text-3xl font-bold sm:text-4xl">How Bankpad works</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-          Three steps from an idea to a locked, liquid market denominated in the currency you choose.
+          Three steps from an idea to a liquid market denominated in the currency you choose.
         </p>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           <Step
             icon={<Coins className="size-5" />}
             step="01"
             title="Pick a currency and mint"
-            body="Name your coin, choose its national currency pair, set an optional creator tax, and deploy for a tiny launch fee."
+            body="Name your coin, choose its national currency pair, set an optional creator tax, and open it to traders."
           />
           <Step
             icon={<TrendingUp className="size-5" />}
@@ -114,7 +127,7 @@ function Home() {
             icon={<Lock className="size-5" />}
             step="03"
             title="Graduate to a locked pool"
-            body="At full curve, liquidity migrates into a locked Uniswap V4 pool paired with your currency. Nobody can pull it."
+            body="At full curve, liquidity locks into the paired currency pool. Nobody can pull it."
           />
         </div>
       </section>
@@ -129,7 +142,7 @@ function Home() {
             {CURRENCIES.map((c) => (
               <div
                 key={c.code}
-                 className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
+                className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
               >
                 <span className="text-lg">{c.flag}</span>
                 <span className="num text-sm font-semibold">{c.code}</span>
@@ -144,18 +157,39 @@ function Home() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold">Trending launches</h2>
-            <p className="mt-2 text-muted-foreground">Fresh off the curve in the last 24 hours.</p>
+            <h2 className="text-3xl font-bold">{trending.length > 0 ? "Trending launches" : "Latest launches"}</h2>
+            <p className="mt-2 text-muted-foreground">
+              {trending.length > 0
+                ? "The most traded coins on Bankpad right now."
+                : "Nothing has launched yet. The first coin here could be yours."}
+            </p>
           </div>
-          <Link to="/explore" className="hidden text-sm font-medium text-primary hover:underline sm:block">
-            View all
-          </Link>
+          {trending.length > 0 && (
+            <Link to="/explore" className="hidden text-sm font-medium text-primary hover:underline sm:block">
+              View all
+            </Link>
+          )}
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {trending.map((t) => (
-            <TokenCard key={t.address} token={t} />
-          ))}
-        </div>
+        {trending.length === 0 ? (
+          <div className="glass-soft mt-8 rounded-2xl border border-dashed p-12 text-center">
+            <p className="text-lg font-semibold">Be the first launch on Bankpad</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Pick a country currency, mint your coin and open its curve to traders in under a minute.
+            </p>
+            <Button
+              asChild
+              className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
+            >
+              <Link to="/launch">Launch the first coin</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {trending.map((t) => (
+              <TokenCard key={t.address} token={t} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* CTA */}

@@ -1,28 +1,48 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowUpRight, Check, Loader2, Plus } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { ArrowUpRight, Loader2, Plus } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
-import { MY_TOKENS, compact, currency } from "@/lib/mock-data";
+import { compact, currency, exactMoney, tokenPrice, toTokenView, type TokenView } from "@/lib/market";
+import { listTokens } from "@/lib/market.functions";
+import { claimFees } from "@/lib/account.functions";
+import { useAccount, useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Creator dashboard — Bankpad" },
+      { title: "Your Bankpad dashboard" },
       {
         name: "description",
         content:
-          "Track the coins you launched on Bankpad, claim creator fees in their paired country currency, and watch holder growth.",
+          "Track the coins you launched on Bankpad, claim creator fees in their paired country currency, and follow your positions.",
       },
-      { property: "og:title", content: "Creator dashboard — Bankpad" },
-      { property: "og:description", content: "Your launches, claimable fees and analytics in one vault." },
+      { property: "og:title", content: "Your Bankpad dashboard" },
+      { property: "og:description", content: "Your launches, balances, positions and claimable fees." },
     ],
   }),
   component: Dashboard,
 });
 
 function Dashboard() {
+  const { user, loading } = useAuth();
+  const { data: account, isLoading } = useAccount();
+  const { data: market } = useQuery({ queryKey: ["tokens"], queryFn: () => listTokens() });
+
+  const myTokens = (account?.myTokens ?? []).map(toTokenView);
+  const allTokens = (market?.tokens ?? []).map(toTokenView);
+  const positions = (account?.holdings ?? [])
+    .map((h) => ({ holding: h, token: allTokens.find((t) => t.id === h.tokenId) }))
+    .filter((p): p is { holding: { tokenId: string; amount: number }; token: TokenView } => Boolean(p.token));
+
+  const totalVolume = myTokens.reduce((s, t) => s + t.volume24h, 0);
+  const totalHolders = myTokens.reduce((s, t) => s + t.holders, 0);
+  const totalFees = myTokens.reduce((s, t) => s + t.feesAccrued + t.feesClaimed, 0);
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -30,8 +50,10 @@ function Dashboard() {
       <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-12 sm:px-6">
           <div>
-            <h1 className="text-3xl font-bold sm:text-4xl">Creator dashboard</h1>
-            <p className="num mt-2 text-sm text-muted-foreground">0x91ab...42fe</p>
+            <h1 className="text-3xl font-bold sm:text-4xl">Your dashboard</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {user ? account?.displayName ?? "Signed in" : "Sign in to see your launches and positions"}
+            </p>
           </div>
           <Button asChild className="bg-primary font-semibold text-primary-foreground">
             <Link to="/launch">
@@ -42,46 +64,107 @@ function Dashboard() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label="Tokens launched" value={String(MY_TOKENS.length)} />
-          <Kpi label="Total volume" value="$1.42M" />
-          <Kpi label="Holders reached" value="3,120" />
-          <Kpi label="Fees earned" value="$18,204" accent />
-        </div>
+        {!user && !loading ? (
+          <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
+            <p className="text-lg font-semibold">Sign in to open your dashboard</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Your launches, balances, positions and creator fees all live here.
+            </p>
+            <Button
+              asChild
+              className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
+            >
+              <Link to="/auth" search={{ next: "/dashboard" }}>
+                Sign in
+              </Link>
+            </Button>
+          </div>
+        ) : isLoading || loading ? (
+          <div className="flex justify-center py-20 text-muted-foreground">
+            <Loader2 className="size-6 animate-spin" />
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Kpi label="Coins launched" value={String(myTokens.length)} />
+              <Kpi label="Volume 24h" value={compact(totalVolume)} />
+              <Kpi label="Holders reached" value={compact(totalHolders)} />
+              <Kpi label="Creator fees earned" value={compact(totalFees)} accent />
+            </div>
 
-        <h2 className="mt-12 text-xl font-semibold">Your launches</h2>
-        <div className="mt-4 space-y-4">
-          {MY_TOKENS.map((t) => (
-            <LaunchRow key={t.address} token={t} />
-          ))}
-        </div>
-
-        <h2 className="mt-12 text-xl font-semibold">Volume by currency</h2>
-        <div className="glass-panel mt-4 rounded-2xl border p-6">
-          {[
-            { code: "USD", pct: 62 },
-            { code: "CAD", pct: 23 },
-            { code: "BRL", pct: 15 },
-          ].map((r) => {
-            const c = currency(r.code);
-            return (
-              <div key={r.code} className="mb-4 last:mb-0">
-                <div className="mb-1.5 flex justify-between text-sm">
-                  <span>
-                    {c.flag} <span className="num">{c.code}</span>
-                  </span>
-                  <span className="num text-muted-foreground">{r.pct}%</span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-[image:var(--gradient-primary)]"
-                    style={{ width: `${r.pct}%` }}
-                  />
-                </div>
+            <h2 className="mt-12 text-xl font-semibold">Your balances</h2>
+            {(account?.balances ?? []).length === 0 ? (
+              <div className="glass-soft mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                No balance yet. Your first trade opens a test balance of 10,000 in that currency.
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {(account?.balances ?? []).map((b) => (
+                  <div key={b.currency} className="glass-panel rounded-xl border p-4">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {currency(b.currency).flag} {b.currency}
+                    </p>
+                    <p className="num mt-1 text-lg font-semibold">{exactMoney(b.amount, b.currency)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h2 className="mt-12 text-xl font-semibold">Your positions</h2>
+            {positions.length === 0 ? (
+              <div className="glass-soft mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                You do not hold any coins yet.{" "}
+                <Link to="/explore" className="text-primary hover:underline">
+                  Explore launches
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {positions.map(({ holding, token }) => {
+                  const c = currency(token.pair);
+                  return (
+                    <Link
+                      key={holding.tokenId}
+                      to="/token/$address"
+                      params={{ address: token.address }}
+                      className="glass-panel flex items-center gap-4 rounded-2xl border p-4 transition-all hover:border-primary/35"
+                    >
+                      <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-xl">
+                        {token.emoji}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold">{token.name}</p>
+                        <p className="num text-xs text-muted-foreground">
+                          {compact(holding.amount)} {token.ticker}
+                        </p>
+                      </div>
+                      <p className="num text-sm font-semibold">
+                        {c.symbol}
+                        {tokenPrice(holding.amount * token.price)}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
+            <h2 className="mt-12 text-xl font-semibold">Your launches</h2>
+            {myTokens.length === 0 ? (
+              <div className="glass-soft mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                You have not launched a coin yet.{" "}
+                <Link to="/launch" className="text-primary hover:underline">
+                  Launch your first one
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {myTokens.map((t) => (
+                  <LaunchRow key={t.address} token={t} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       <Footer />
@@ -93,14 +176,30 @@ function Kpi({ label, value, accent }: { label: string; value: string; accent?: 
   return (
     <div className="glass-panel glass-interactive rounded-2xl border p-5">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-       <p className={`num mt-2 text-2xl font-bold ${accent ? "brand-text" : ""}`}>{value}</p>
+      <p className={`num mt-2 text-2xl font-bold ${accent ? "brand-text" : ""}`}>{value}</p>
     </div>
   );
 }
 
-function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
+function LaunchRow({ token }: { token: TokenView }) {
   const c = currency(token.pair);
-  const [state, setState] = useState<"idle" | "claiming" | "claimed">("idle");
+  const [busy, setBusy] = useState(false);
+  const claim = useServerFn(claimFees);
+  const queryClient = useQueryClient();
+
+  async function onClaim(e: React.MouseEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const res = await claim({ data: { tokenId: token.id } });
+      await queryClient.invalidateQueries();
+      toast.success(`Claimed ${exactMoney(res.claimed, token.pair)}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not claim fees");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="glass-panel flex flex-wrap items-center gap-4 rounded-2xl border p-4 transition-all hover:border-primary/35 hover:shadow-[var(--shadow-glow)] sm:p-5">
@@ -115,33 +214,26 @@ function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
       <div className="min-w-[140px] flex-1">
         <p className="font-semibold">{token.name}</p>
         <p className="num text-xs text-muted-foreground">
-          {token.ticker} / {c.code} · {token.graduated ? "Graduated" : `${token.progress}% on curve`}
+          {token.ticker} / {c.code} ·{" "}
+          {token.graduated ? "Graduated" : `${token.progress.toFixed(1)}% on curve`}
         </p>
       </div>
       <div className="hidden gap-6 sm:flex">
-        <Mini label="Volume" value={`${c.symbol}${compact(token.volume24h)}`} />
+        <Mini label="Volume 24h" value={`${c.symbol}${compact(token.volume24h)}`} />
         <Mini label="Holders" value={compact(token.holders)} />
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Claimable</p>
-           <p className="num text-sm font-semibold text-primary">
-            {c.symbol}
-            {token.creatorFees.toLocaleString()}
-          </p>
+          <p className="num text-sm font-semibold text-primary">{exactMoney(token.feesAccrued, token.pair)}</p>
         </div>
         <Button
           size="sm"
-          disabled={state !== "idle"}
-          onClick={() => {
-            setState("claiming");
-            setTimeout(() => setState("claimed"), 1400);
-          }}
-           className="bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
+          disabled={busy || token.feesAccrued <= 0}
+          onClick={onClaim}
+          className="bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
         >
-          {state === "idle" && "Claim"}
-          {state === "claiming" && <Loader2 className="size-4 animate-spin" />}
-          {state === "claimed" && <Check className="size-4" />}
+          {busy ? <Loader2 className="size-4 animate-spin" /> : "Claim"}
         </Button>
         <Link
           to="/token/$address"

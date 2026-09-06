@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { currency, compact, type Token } from "@/lib/mock-data";
+import { currency, compact, tokenPrice, timeAgo, type TokenView } from "@/lib/market";
 
-export function TokenCard({ token }: { token: Token }) {
+export function TokenCard({ token }: { token: TokenView }) {
   const c = currency(token.pair);
   const up = token.change24h >= 0;
 
@@ -30,7 +30,7 @@ export function TokenCard({ token }: { token: Token }) {
             )}
           </div>
           <p className="num text-xs text-muted-foreground">
-            {token.ticker} / {c.code} · {token.createdAgo}
+            {token.ticker} / {c.code} · {timeAgo(token.createdAt)}
           </p>
         </div>
         <span className={`num text-sm font-semibold ${up ? "text-success" : "text-destructive"}`}>
@@ -39,18 +39,20 @@ export function TokenCard({ token }: { token: Token }) {
         </span>
       </div>
 
-      <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{token.description}</p>
+      <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+        {token.description || "No description yet."}
+      </p>
 
       <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-        <Stat label="Mkt cap" value={`${c.symbol}${compact(token.marketCap)}`} />
+        <Stat label="Price" value={`${c.symbol}${tokenPrice(token.price)}`} />
         <Stat label="Volume 24h" value={`${c.symbol}${compact(token.volume24h)}`} />
         <Stat label="Holders" value={compact(token.holders)} />
       </div>
 
       <div className="mt-4">
         <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{token.graduated ? "Locked Uniswap V4 pool" : "Bonding curve"}</span>
-          <span className="num">{token.progress}%</span>
+          <span>{token.graduated ? "Locked pool" : "Bonding curve"}</span>
+          <span className="num">{token.progress.toFixed(1)}%</span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
           <div
@@ -67,7 +69,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="glass-control rounded-lg border px-2 py-1.5">
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="num text-xs font-semibold">{value}</p>
+      <p className="num truncate text-xs font-semibold">{value}</p>
     </div>
   );
 }

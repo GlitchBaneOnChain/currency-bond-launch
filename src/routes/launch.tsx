@@ -1,6 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, Globe, ImagePlus, Info, Loader2, Send, Twitter } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { Globe, Info, Loader2, Send, Twitter } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -8,18 +11,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { CURRENCIES, currency } from "@/lib/mock-data";
+import { CURRENCIES, currency, PROTOCOL_FEE_BPS, BASE_CREATOR_FEE_BPS } from "@/lib/market";
+import { launchToken } from "@/lib/account.functions";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/launch")({
   head: () => ({
     meta: [
-      { title: "Launch a token — Bankpad" },
+      { title: "Launch a token on Bankpad" },
       {
         name: "description",
         content:
-          "Mint your coin on Bankpad in under a minute: pick a national currency pair, set a creator tax, and deploy on Robinhood Chain.",
+          "Mint your coin on Bankpad in under a minute: pick a national currency pair, set a creator tax, and open the bonding curve.",
       },
-      { property: "og:title", content: "Launch a token — Bankpad" },
+      { property: "og:title", content: "Launch a token on Bankpad" },
       {
         property: "og:description",
         content: "Pick a country currency, set your creator tax, and launch on the bonding curve.",
@@ -36,9 +41,46 @@ function LaunchPage() {
   const [pair, setPair] = useState("USD");
   const [tax, setTax] = useState(1);
   const [logo, setLogo] = useState("🏦");
-  const [state, setState] = useState<"idle" | "launching" | "done">("idle");
+  const [website, setWebsite] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [busy, setBusy] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const submit = useServerFn(launchToken);
 
   const c = currency(pair);
+
+  async function handleLaunch() {
+    if (!user) {
+      navigate({ to: "/auth", search: { next: "/launch" } });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await submit({
+        data: {
+          name,
+          ticker,
+          emoji: logo,
+          pair,
+          description: desc,
+          website,
+          twitter,
+          telegram,
+          creatorTaxBps: Math.round(tax * 100),
+        },
+      });
+      await queryClient.invalidateQueries();
+      toast.success(`${ticker} is live on the curve`);
+      navigate({ to: "/token/$address", params: { address: res.address } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not launch that coin");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -105,9 +147,6 @@ function LaunchPage() {
                       </button>
                     ))}
                   </div>
-                  <button className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
-                    <ImagePlus className="size-3.5" /> Upload custom image
-                  </button>
                 </div>
               </div>
             </Field>
@@ -141,13 +180,28 @@ function LaunchPage() {
           <Panel title="Links and creator tax" step="03">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Website">
-                <Input placeholder="https://" className="glass-control" />
+                <Input
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://"
+                  className="glass-control"
+                />
               </Field>
               <Field label="Twitter">
-                <Input placeholder="https://x.com/" className="glass-control" />
+                <Input
+                  value={twitter}
+                  onChange={(e) => setTwitter(e.target.value)}
+                  placeholder="https://x.com/"
+                  className="glass-control"
+                />
               </Field>
               <Field label="Telegram">
-                <Input placeholder="https://t.me/" className="glass-control" />
+                <Input
+                  value={telegram}
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder="https://t.me/"
+                  className="glass-control"
+                />
               </Field>
             </div>
             <Field label={`Creator tax: ${tax.toFixed(1)}%`}>
@@ -170,9 +224,15 @@ function LaunchPage() {
                <Info className="size-4 text-primary" /> Fees
             </p>
             <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-              <FeeRow label="Launch fee" value={`${c.symbol}2.00`} />
-              <FeeRow label="Trading fee" value="1.0%" />
-              <FeeRow label="Split" value="60% creator / 40% protocol" />
+              <FeeRow label="Launch fee" value="Free" />
+              <FeeRow
+                label="Trading fee"
+                value={`${((PROTOCOL_FEE_BPS + BASE_CREATOR_FEE_BPS) / 100).toFixed(1)}%`}
+              />
+              <FeeRow
+                label="Split"
+                value={`${BASE_CREATOR_FEE_BPS / 10}0% creator / ${PROTOCOL_FEE_BPS / 10}0% protocol`}
+              />
             </div>
           </div>
         </div>
@@ -226,28 +286,28 @@ function LaunchPage() {
 
           <Button
             size="lg"
-            disabled={state !== "idle"}
-            onClick={() => {
-              setState("launching");
-              setTimeout(() => setState("done"), 2000);
-            }}
+            disabled={busy || loading}
+            onClick={handleLaunch}
             className="mt-5 w-full bg-[image:var(--gradient-primary)] text-base font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
           >
-            {state === "launching" && (
+            {busy ? (
               <>
-                <Loader2 className="mr-2 size-4 animate-spin" /> Launching...
+                <Loader2 className="mr-2 size-4 animate-spin" /> Launching your coin
               </>
+            ) : user ? (
+              `Launch ${ticker || "token"} / ${c.code}`
+            ) : (
+              "Sign in to launch"
             )}
-            {state === "done" && (
-              <>
-                <Check className="mr-2 size-4" /> Launched
-              </>
-            )}
-            {state === "idle" && `Launch ${ticker || "token"} / ${c.code}`}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
             Liquidity locks automatically at graduation. You keep {tax.toFixed(1)}% creator tax plus your fee
-            share.
+            share.{" "}
+            {!user && (
+              <Link to="/auth" search={{ next: "/launch" }} className="text-primary hover:underline">
+                Create an account
+              </Link>
+            )}
           </p>
         </div>
       </section>
