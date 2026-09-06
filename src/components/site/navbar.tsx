@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
+import { Loader2, LogOut, Menu, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount, useAuth } from "@/hooks/useAuth";
+import { signInWithWallet } from "@/lib/wallet-client";
+import { toast } from "sonner";
 import { currency } from "@/lib/market";
 import bankpadLogo from "@/assets/bankpad-green-logo.jpg.asset.json";
 
@@ -20,16 +22,31 @@ export function AccountButton({ full }: { full?: boolean }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [connecting, setConnecting] = useState(false);
 
   if (loading) return <div className={`h-9 ${full ? "w-full" : "w-28"} animate-pulse rounded-md bg-secondary/60`} />;
 
   if (!user) {
     return (
       <Button
-        asChild
+        disabled={connecting}
+        onClick={async () => {
+          setConnecting(true);
+          try {
+            const { displayName } = await signInWithWallet();
+            toast.success(`Connected as ${displayName}`);
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : "Could not connect that wallet";
+            toast.error(msg);
+            if (msg.startsWith("No wallet found")) navigate({ to: "/auth" });
+          } finally {
+            setConnecting(false);
+          }
+        }}
         className={`${full ? "w-full" : ""} bg-primary font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] hover:bg-primary`}
       >
-        <Link to="/auth">Sign in</Link>
+        {connecting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Wallet className="mr-2 size-4" />}
+        Connect wallet
       </Button>
     );
   }
@@ -50,7 +67,7 @@ export function AccountButton({ full }: { full?: boolean }) {
         className={`${full ? "w-full" : ""} border-primary/40 bg-primary/10 text-primary hover:bg-primary/20`}
         onClick={() => setOpen((o) => !o)}
       >
-        <UserIcon className="mr-2 size-4" />
+        <Wallet className="mr-2 size-4" />
         <span className="num max-w-[130px] truncate text-xs">{account?.displayName ?? user.email}</span>
       </Button>
       {open && (
