@@ -57,7 +57,7 @@ function Dashboard() {
         </div>
 
         <h2 className="mt-12 text-xl font-semibold">Volume by currency</h2>
-        <div className="mt-4 rounded-2xl border border-border/70 bg-card p-6">
+        <div className="glass-panel mt-4 rounded-2xl border p-6">
           {[
             { code: "USD", pct: 62 },
             { code: "CAD", pct: 23 },
@@ -91,7 +91,7 @@ function Dashboard() {
 
 function Kpi({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-5">
+    <div className="glass-panel rounded-2xl border p-5">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={`num mt-2 text-2xl font-bold ${accent ? "gold-text" : ""}`}>{value}</p>
     </div>
@@ -103,7 +103,7 @@ function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
   const [state, setState] = useState<"idle" | "claiming" | "claimed">("idle");
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
+    <div className="glass-panel flex flex-wrap items-center gap-4 rounded-2xl border p-4 sm:p-5">
       <div className="relative">
         <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-2xl">
           {token.emoji}
