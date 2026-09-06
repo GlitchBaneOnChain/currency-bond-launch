@@ -22,7 +22,7 @@ export const CURRENCIES: Currency[] = [
 ];
 
 export function currency(code: string): Currency {
-  return CURRENCIES.find((c) => c.code === code) ?? CURRENCIES[0];
+  return CURRENCIES.find((c) => c.code === code) ?? (CURRENCIES[0] as Currency);
 }
 
 export type Token = {
