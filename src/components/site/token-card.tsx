@@ -9,7 +9,7 @@ export function TokenCard({ token }: { token: Token }) {
     <Link
       to="/token/$address"
       params={{ address: token.address }}
-      className="group relative flex flex-col rounded-xl border border-border/70 bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
+      className="glass-panel group relative flex flex-col rounded-xl border p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
     >
       <div className="flex items-start gap-3">
         <div className="relative">
