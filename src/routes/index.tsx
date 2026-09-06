@@ -78,11 +78,6 @@ function Home() {
               >
                 <Link to="/explore">Explore launches</Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="w-full text-muted-foreground hover:text-foreground sm:w-auto">
-                <a href="/bankpad-logo.svg" download="bankpad-logo.svg">
-                  <Download className="mr-2 size-4" /> Download logo
-                </a>
-              </Button>
             </div>
           </div>
 
