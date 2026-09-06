@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Coins, Download, Landmark, Lock, TrendingUp } from "lucide-react";
+import { ArrowRight, Coins, Landmark, Lock, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { TokenCard } from "@/components/site/token-card";
@@ -77,11 +77,6 @@ function Home() {
                 className="w-full border-border bg-card/60 text-base sm:w-auto"
               >
                 <Link to="/explore">Explore launches</Link>
-              </Button>
-              <Button asChild size="lg" variant="ghost" className="w-full text-muted-foreground hover:text-foreground sm:w-auto">
-                <a href="/bankpad-logo.svg" download="bankpad-logo.svg">
-                  <Download className="mr-2 size-4" /> Download logo
-                </a>
               </Button>
             </div>
           </div>
