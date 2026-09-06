@@ -91,7 +91,12 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           polygonSideColor={() => "rgba(34, 197, 94, 0.25)"}
           polygonStrokeColor={() => "rgba(134, 239, 172, 0.45)"}
           polygonsTransitionDuration={220}
-          onPolygonHover={(d) => setHovered((d as Feature) ?? null)}
+          onPolygonHover={(d) => {
+            setHovered((d as Feature) ?? null);
+            const controls = globeRef.current?.controls();
+            if (controls) controls.autoRotate = !d;
+            if (wrap.current) wrap.current.style.cursor = supported(d as Feature) ? "pointer" : "grab";
+          }}
           onPolygonClick={(d) => {
             const f = d as Feature;
             const code = supported(f);
