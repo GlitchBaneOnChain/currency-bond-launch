@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MeshPhongMaterial } from "three";
 import { useNavigate } from "@tanstack/react-router";
 import Globe, { type GlobeMethods } from "react-globe.gl";
 import { MousePointerClick } from "lucide-react";
