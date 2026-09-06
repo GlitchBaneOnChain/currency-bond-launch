@@ -323,7 +323,7 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Social({ icon, label, href }: { icon: React.ReactNode; label: string; href?: string }) {
+function Social({ icon, label, href }: { icon: React.ReactNode; label: string; href?: string | undefined }) {
   if (!href) return null;
   return (
     <a
