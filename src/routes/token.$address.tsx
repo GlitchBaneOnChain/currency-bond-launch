@@ -64,7 +64,7 @@ function TokenPage() {
                 {token.ticker} / {c.code}
               </span>
               {token.graduated ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold">
+                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                   <Lock className="size-3" /> Graduated
                 </span>
               ) : (
@@ -144,11 +144,11 @@ function TokenPage() {
               <h2 className="font-semibold">
                 {token.graduated ? "Locked Uniswap V4 pool" : "Graduation progress"}
               </h2>
-              <span className="num text-sm text-gold">{token.progress}%</span>
+               <span className="num text-sm text-primary">{token.progress}%</span>
             </div>
             <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
-                className={`h-full rounded-full transition-all duration-700 ${token.graduated ? "bg-[image:var(--gradient-gold)]" : "bg-[image:var(--gradient-blue)]"}`}
+                 className="h-full rounded-full bg-[image:var(--gradient-primary)] transition-all duration-700"
                 style={{ width: `${token.progress}%` }}
               />
             </div>
@@ -251,7 +251,7 @@ function TokenPage() {
               }}
               className={`mt-4 w-full font-semibold ${
                 side === "buy"
-                  ? "bg-[image:var(--gradient-gold)] text-gold-foreground"
+                   ? "bg-[image:var(--gradient-primary)] text-primary-foreground"
                   : "bg-destructive text-destructive-foreground"
               }`}
             >
@@ -270,12 +270,12 @@ function TokenPage() {
           </div>
 
           {/* Creator fees */}
-          <div className="glass-panel rounded-2xl border border-gold/30 p-5">
+           <div className="glass-panel rounded-2xl border border-primary/30 p-5">
             <h2 className="font-semibold">Creator fees</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               Paid in {c.flag} {c.code} to the launch wallet.
             </p>
-            <p className="num mt-4 text-2xl font-bold gold-text">
+             <p className="num mt-4 text-2xl font-bold brand-text">
               {c.symbol}
               {token.creatorFees.toLocaleString()}
             </p>
@@ -286,7 +286,7 @@ function TokenPage() {
                 setTimeout(() => setClaim("claimed"), 1400);
               }}
               variant="outline"
-              className="mt-4 w-full border-gold/40 bg-gold/10 text-gold hover:bg-gold/20"
+               className="mt-4 w-full border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
             >
               {claim === "idle" && "Claim fees"}
               {claim === "claiming" && <Loader2 className="size-4 animate-spin" />}

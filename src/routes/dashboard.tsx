@@ -74,7 +74,7 @@ function Dashboard() {
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                   <div
-                    className="h-full rounded-full bg-[image:var(--gradient-blue)]"
+                    className="h-full rounded-full bg-[image:var(--gradient-primary)]"
                     style={{ width: `${r.pct}%` }}
                   />
                 </div>
@@ -93,7 +93,7 @@ function Kpi({ label, value, accent }: { label: string; value: string; accent?: 
   return (
     <div className="glass-panel glass-interactive rounded-2xl border p-5">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={`num mt-2 text-2xl font-bold ${accent ? "gold-text" : ""}`}>{value}</p>
+       <p className={`num mt-2 text-2xl font-bold ${accent ? "brand-text" : ""}`}>{value}</p>
     </div>
   );
 }
@@ -125,7 +125,7 @@ function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
       <div className="flex items-center gap-3">
         <div className="text-right">
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Claimable</p>
-          <p className="num text-sm font-semibold text-gold">
+           <p className="num text-sm font-semibold text-primary">
             {c.symbol}
             {token.creatorFees.toLocaleString()}
           </p>
@@ -137,7 +137,7 @@ function LaunchRow({ token }: { token: (typeof MY_TOKENS)[number] }) {
             setState("claiming");
             setTimeout(() => setState("claimed"), 1400);
           }}
-          className="bg-[image:var(--gradient-gold)] font-semibold text-gold-foreground"
+           className="bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
         >
           {state === "idle" && "Claim"}
           {state === "claiming" && <Loader2 className="size-4 animate-spin" />}

@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Landmark, Loader2, Menu, Wallet, X } from "lucide-react";
+import { Loader2, Menu, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import bankpadLogo from "@/assets/bankpad-green-logo.jpg.asset.json";
 
 const NAV = [
   { to: "/launch", label: "Launch" },
@@ -16,7 +17,7 @@ export function WalletButton({ full }: { full?: boolean }) {
     return (
       <Button
         variant="outline"
-        className={`${full ? "w-full" : ""} border-gold/40 bg-gold/10 text-gold hover:bg-gold/20`}
+          className={`${full ? "w-full" : ""} border-primary/40 bg-primary/10 text-primary hover:bg-primary/20`}
         onClick={() => setState("idle")}
       >
         <span className="mr-2 inline-block size-2 rounded-full bg-success" />
@@ -53,13 +54,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/45 shadow-[inset_0_-1px_0_oklch(1_0_0/6%),0_12px_40px_-28px_oklch(0.02_0.02_264/85%)] backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-[image:var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-gold)] transition-transform duration-300 hover:rotate-3 hover:scale-105">
-            <Landmark className="size-5" />
-          </span>
-          <span className="text-lg font-bold tracking-tight">
-            Bank<span className="gold-text">pad</span>
-          </span>
+        <Link to="/" className="flex items-center">
+          <img src={bankpadLogo.url} alt="Bankpad" className="h-10 w-auto max-w-[190px] object-contain sm:max-w-[220px]" />
           <span className="ml-1 hidden rounded-full border border-border bg-card/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
             Robinhood Chain
           </span>
