@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
+import { ClientOnly } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight, Coins, Landmark, Lock, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
@@ -36,6 +38,10 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+const CurrencyGlobe = lazy(() =>
+  import("@/components/site/currency-globe").then((m) => ({ default: m.CurrencyGlobe })),
+);
+
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
   const tokens = data.tokens.map(toTokenView);
@@ -61,7 +67,16 @@ function Home() {
       {/* Hero */}
       <section className="vault-surface section-glow relative min-h-[650px] overflow-hidden">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
+        <div className="pointer-events-none absolute inset-0 opacity-90">
+          <ClientOnly>
+            <Suspense fallback={null}>
+              <div className="pointer-events-auto absolute inset-0">
+                <CurrencyGlobe tokens={tokens} />
+              </div>
+            </Suspense>
+          </ClientOnly>
+        </div>
+        <div className="pointer-events-none relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
@@ -73,7 +88,10 @@ function Home() {
               Bankpad is a launchpad built like a bank. Pick a national currency, mint your coin, and let the
               bonding curve do the rest.
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <p className="mx-auto mt-4 max-w-md text-sm text-primary/90">
+              Spin the globe and pick a country to see its currency pair.
+            </p>
+            <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 asChild
                 size="lg"
