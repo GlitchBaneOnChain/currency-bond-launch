@@ -9,11 +9,11 @@ export function TokenCard({ token }: { token: Token }) {
     <Link
       to="/token/$address"
       params={{ address: token.address }}
-      className="glass-panel group relative flex flex-col rounded-xl border p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
+      className="glass-panel glass-interactive group relative flex flex-col overflow-hidden rounded-xl border p-4"
     >
       <div className="flex items-start gap-3">
         <div className="relative">
-          <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-2xl">
+          <span className="glass-soft flex size-12 items-center justify-center rounded-lg border text-2xl transition-transform duration-300 group-hover:scale-105">
             {token.emoji}
           </span>
           <span className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border border-border bg-background text-xs">
@@ -65,7 +65,7 @@ export function TokenCard({ token }: { token: Token }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-secondary/60 px-2 py-1.5">
+    <div className="glass-control rounded-lg border px-2 py-1.5">
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="num text-xs font-semibold">{value}</p>
     </div>
