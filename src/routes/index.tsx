@@ -76,7 +76,7 @@ function Home() {
             </Suspense>
           </ClientOnly>
         </div>
-        <div className="pointer-events-none relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
+        <div className="pointer-events-none relative mx-auto flex min-h-[650px] max-w-7xl flex-col justify-end px-4 pb-16 pt-48 sm:px-6 md:pb-20 md:pt-56 lg:pb-24">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
