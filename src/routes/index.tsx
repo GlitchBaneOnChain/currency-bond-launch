@@ -44,9 +44,9 @@ const CurrencyGlobe = lazy(() =>
 
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
-  const tokens = data.tokens.map(toTokenView);
+  const tokens = (data?.tokens ?? []).map(toTokenView);
   const trending = [...tokens].sort((a, b) => b.volume24h - a.volume24h).slice(0, 6);
-  const stats = data.stats;
+  const stats = data?.stats ?? { launches: 0, volume: 0, fees: 0, pairsUsed: 0 };
 
   return (
     <div className="min-h-screen">
