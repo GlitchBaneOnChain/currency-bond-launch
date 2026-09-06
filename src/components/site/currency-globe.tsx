@@ -75,13 +75,7 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           showAtmosphere
           atmosphereColor="#22c55e"
           atmosphereAltitude={0.18}
-          globeMaterial={
-            {
-              color: "#04140b",
-              transparent: true,
-              opacity: 0.92,
-            } as never
-          }
+          globeMaterial={globeMaterial as never}
           polygonsData={features}
           polygonAltitude={(d) => (d === hovered ? 0.07 : supported(d as Feature) ? 0.018 : 0.008)}
           polygonCapColor={(d) => {
