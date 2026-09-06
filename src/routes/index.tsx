@@ -65,9 +65,9 @@ function Home() {
       </div>
 
       {/* Hero */}
-      <section className="vault-surface section-glow relative min-h-[780px] overflow-hidden md:min-h-[850px]">
+      <section className="vault-surface section-glow relative min-h-[780px] overflow-hidden md:min-h-[860px]">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[62%] opacity-90 md:h-[58%]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[55%] opacity-90 md:h-[52%]">
           <ClientOnly>
             <Suspense fallback={null}>
               <div className="pointer-events-auto absolute inset-0">
@@ -76,7 +76,7 @@ function Home() {
             </Suspense>
           </ClientOnly>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-10 pt-32 sm:px-6 md:pb-14 md:pt-40 lg:pb-16">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-10 pt-40 sm:px-6 md:pb-14 md:pt-44 lg:pb-16">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
