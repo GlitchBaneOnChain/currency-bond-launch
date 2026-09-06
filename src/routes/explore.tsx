@@ -110,7 +110,7 @@ function Explore() {
                 ["progress", "Progress"],
               ] as [Sort, string][]
             ).map(([k, label]) => (
-              <Chip key={k} active={sort === k} onClick={() => setSort(k)} gold>
+               <Chip key={k} active={sort === k} onClick={() => setSort(k)}>
                 {label}
               </Chip>
             ))}
@@ -138,16 +138,14 @@ function Explore() {
 
 function Chip({
   active,
-  gold,
   onClick,
   children,
 }: {
   active: boolean;
-  gold?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
-  const on = gold ? "border-gold/50 bg-gold/15 text-gold" : "border-primary/50 bg-primary/15 text-primary";
+  const on = "border-primary/50 bg-primary/15 text-primary";
   return (
     <button
       onClick={onClick}

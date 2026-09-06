@@ -24,7 +24,7 @@ export function TokenCard({ token }: { token: Token }) {
           <div className="flex items-center gap-2">
             <p className="truncate font-semibold">{token.name}</p>
             {token.graduated && (
-              <span className="shrink-0 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold">
+              <span className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                 Graduated
               </span>
             )}
@@ -54,7 +54,7 @@ export function TokenCard({ token }: { token: Token }) {
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
           <div
-            className={`h-full rounded-full transition-all duration-700 ${token.graduated ? "bg-[image:var(--gradient-gold)]" : "bg-[image:var(--gradient-blue)]"}`}
+            className="h-full rounded-full bg-[image:var(--gradient-primary)] transition-all duration-700"
             style={{ width: `${token.progress}%` }}
           />
         </div>

@@ -50,11 +50,11 @@ function Home() {
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-32">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
-              <Landmark className="size-3.5 text-gold" /> Now open on Robinhood Chain
+              <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-6xl">
               Launch coins paired with{" "}
-              <span className="gold-text">real country currencies</span>
+               <span className="brand-text">real country currencies</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
               Bankpad is a launchpad built like a bank. Pick a national currency, mint your coin, and let the
@@ -64,7 +64,7 @@ function Home() {
               <Button
                 asChild
                 size="lg"
-                className="w-full bg-[image:var(--gradient-gold)] text-base font-semibold text-gold-foreground shadow-[var(--shadow-gold)] transition-all hover:-translate-y-0.5 hover:scale-[1.02] sm:w-auto"
+                className="w-full bg-[image:var(--gradient-primary)] text-base font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-all hover:-translate-y-0.5 hover:scale-[1.02] sm:w-auto"
               >
                 <Link to="/launch">
                   Launch Token <ArrowRight className="ml-2 size-4" />
@@ -129,7 +129,7 @@ function Home() {
             {CURRENCIES.map((c) => (
               <div
                 key={c.code}
-                className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-[var(--shadow-gold)]"
+                 className="glass-soft flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]"
               >
                 <span className="text-lg">{c.flag}</span>
                 <span className="num text-sm font-semibold">{c.code}</span>
@@ -171,7 +171,7 @@ function Home() {
             <Button
               asChild
               size="lg"
-              className="mt-8 bg-[image:var(--gradient-gold)] font-semibold text-gold-foreground transition-transform hover:scale-[1.03]"
+              className="mt-8 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground transition-transform hover:scale-[1.03]"
             >
               <Link to="/launch">
                 Launch Token <ArrowRight className="ml-2 size-4" />
@@ -189,7 +189,7 @@ function Home() {
 function StatCell({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="px-6 py-5 text-center">
-      <p className={`num text-2xl font-bold ${accent ? "gold-text" : ""}`}>{value}</p>
+      <p className={`num text-2xl font-bold ${accent ? "brand-text" : ""}`}>{value}</p>
       <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   );

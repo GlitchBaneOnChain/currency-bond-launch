@@ -98,7 +98,7 @@ function LaunchPage() {
                         key={e}
                         onClick={() => setLogo(e)}
                         className={`size-9 rounded-lg border text-lg transition-colors ${
-                          logo === e ? "border-gold bg-gold/15" : "border-border bg-secondary/50"
+                          logo === e ? "border-primary bg-primary/15" : "border-border bg-secondary/50"
                         }`}
                       >
                         {e}
@@ -124,7 +124,7 @@ function LaunchPage() {
                   onClick={() => setPair(cur.code)}
                   className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
                     pair === cur.code
-                      ? "border-gold/60 bg-gold/10 shadow-[var(--shadow-vault)]"
+                       ? "border-primary/60 bg-primary/10 shadow-[var(--shadow-vault)]"
                        : "glass-control border-border hover:-translate-y-0.5 hover:border-primary/40"
                   }`}
                 >
@@ -167,7 +167,7 @@ function LaunchPage() {
 
           <div className="glass-soft rounded-2xl border p-5">
             <p className="flex items-center gap-2 text-sm font-semibold">
-              <Info className="size-4 text-gold" /> Fees
+               <Info className="size-4 text-primary" /> Fees
             </p>
             <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
               <FeeRow label="Launch fee" value={`${c.symbol}2.00`} />
@@ -208,7 +208,7 @@ function LaunchPage() {
                 <span className="num">0%</span>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full w-0 rounded-full bg-[image:var(--gradient-blue)]" />
+                 <div className="h-full w-0 rounded-full bg-[image:var(--gradient-primary)]" />
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] text-muted-foreground">
@@ -231,7 +231,7 @@ function LaunchPage() {
               setState("launching");
               setTimeout(() => setState("done"), 2000);
             }}
-            className="mt-5 w-full bg-[image:var(--gradient-gold)] text-base font-semibold text-gold-foreground transition-transform hover:scale-[1.02]"
+            className="mt-5 w-full bg-[image:var(--gradient-primary)] text-base font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
           >
             {state === "launching" && (
               <>
