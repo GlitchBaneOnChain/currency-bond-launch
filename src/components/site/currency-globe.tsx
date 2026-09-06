@@ -130,7 +130,7 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
       </div>
 
       {hoveredCode && (
-        <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-3 rounded-2xl border border-primary/40 bg-background/80 px-4 py-3 backdrop-blur-xl sm:left-8 sm:top-8">
+        <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-3 rounded-2xl border border-primary/40 bg-background/80 px-4 py-3 shadow-[var(--shadow-glow)] backdrop-blur-xl sm:left-8 sm:top-8">
           <span className="text-4xl leading-none">{currency(hoveredCode).flag}</span>
           <div className="text-left">
             <p className="text-sm font-semibold">{hovered?.properties.name}</p>
@@ -145,6 +145,13 @@ export function CurrencyGlobe({ tokens }: { tokens: TokenView[] }) {
           </div>
         </div>
       )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4 sm:bottom-6">
+        <div className="glass-panel inline-flex animate-pulse items-center gap-2 rounded-full border border-primary/30 px-4 py-2 text-sm font-medium text-primary shadow-[var(--shadow-glow)]">
+          <MousePointerClick className="size-4" />
+          <span>Click any country to launch or explore its pair</span>
+        </div>
+      </div>
     </div>
   );
 }
