@@ -76,7 +76,7 @@ function Home() {
             </Suspense>
           </ClientOnly>
         </div>
-        <div className="pointer-events-none relative mx-auto flex min-h-[650px] max-w-7xl flex-col justify-end px-4 pb-12 pt-64 sm:px-6 md:pb-16 md:pt-72 lg:pb-20 lg:pt-80">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-10 pt-32 sm:px-6 md:pb-14 md:pt-40 lg:pb-16">
           <div className="animate-rise mx-auto max-w-3xl text-center">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
@@ -111,14 +111,16 @@ function Home() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Live stats bar */}
-          <div className="glass-panel mx-auto mt-14 grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
-            <StatCell label="Total launches" value={stats.launches.toLocaleString()} />
-            <StatCell label="Volume traded" value={compact(stats.volume)} />
-            <StatCell label="Fees earned by creators" value={compact(stats.fees)} accent />
-            <StatCell label="Currencies supported" value={String(CURRENCIES.length)} />
-          </div>
+      {/* Live stats bar */}
+      <section className="border-b border-border/60 bg-background/45 px-4 py-6 backdrop-blur-xl sm:px-6">
+        <div className="glass-panel mx-auto grid max-w-4xl grid-cols-2 divide-border overflow-hidden rounded-2xl border md:grid-cols-4 md:divide-x">
+          <StatCell label="Total launches" value={stats.launches.toLocaleString()} />
+          <StatCell label="Volume traded" value={compact(stats.volume)} />
+          <StatCell label="Fees earned by creators" value={compact(stats.fees)} accent />
+          <StatCell label="Currencies supported" value={String(CURRENCIES.length)} />
         </div>
       </section>
 
