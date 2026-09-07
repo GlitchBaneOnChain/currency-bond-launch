@@ -1,0 +1,124 @@
+// Bankpad backend schema. Postgres is the source of truth for launch
+// history; the chain is the source of truth for state (balances, LP,
+// current fee accrual). Every mutating job records what it did here so
+// nightly reconciliation can cross-check against on-chain events.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// One row per launched token. Keyed by the on-chain token address so
+/// lookups from the frontend and the automation engine agree.
+model Launch {
+  id                String   @id @default(cuid())
+  address           String   @unique                      // launched token ERC-20
+  chainId           Int      @default(4663)
+  name              String
+  ticker            String
+  emoji             String   @default("🏦")
+  description       String   @default("")
+  rewardCurrencyCode String                                // e.g. "USD"
+  rewardTokenAddress String                                // e.g. USDG address
+  feeWallet         String                                 // creator or distributor
+  distributor       String?                                // distributor address once deployed
+  poolAddress       String
+  lockerAddress     String
+  positionId        BigInt
+  launchTxHash      String
+  creatorAddress    String
+  creatorTaxBps     Int      @default(0)
+  website           String?
+  twitter           String?
+  telegram          String?
+  paused            Boolean  @default(false)               // per-launch kill-switch
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  feeClaims         FeeClaim[]
+  currencyBuys      CurrencyBuy[]
+  payoutBatches     PayoutBatch[]
+
+  @@index([creatorAddress])
+  @@index([rewardCurrencyCode])
+  @@index([paused, createdAt])
+}
+
+/// Every fee-claim call the automation engine broadcasts. Meme burned
+/// is stored so the UI can render "X% of supply burned" without an
+/// extra chain read.
+model FeeClaim {
+  id            String   @id @default(cuid())
+  launchId      String
+  txHash        String   @unique
+  memeBurned    String   // decimal string; token has 18 decimals
+  wethReceived String   // decimal string
+  blockNumber   BigInt
+  ranAt         DateTime @default(now())
+
+  launch        Launch   @relation(fields: [launchId], references: [id])
+  @@index([launchId, ranAt])
+}
+
+/// Every WETH -> reward swap the automation engine broadcasts.
+model CurrencyBuy {
+  id             String   @id @default(cuid())
+  launchId       String
+  txHash         String   @unique
+  wethIn         String   // decimal string
+  rewardOut      String   // decimal string, in reward-token base units
+  priceImpactBps Int      @default(0)
+  blockNumber    BigInt
+  ranAt          DateTime @default(now())
+
+  launch         Launch   @relation(fields: [launchId], references: [id])
+  @@index([launchId, ranAt])
+}
+
+/// One batch = one `distribute()` call. Individual Payout rows carry
+/// the per-holder breakdown for the UI's dividend history.
+model PayoutBatch {
+  id              String   @id @default(cuid())
+  launchId        String
+  txHash          String   @unique
+  totalPaid       String   // decimal string, reward-token base units
+  eligibleCount   Int
+  eligibleSupply  String   // decimal string, token base units
+  blockNumber     BigInt
+  ranAt           DateTime @default(now())
+
+  launch          Launch   @relation(fields: [launchId], references: [id])
+  payouts         Payout[]
+
+  @@index([launchId, ranAt])
+}
+
+model Payout {
+  id         String   @id @default(cuid())
+  batchId    String
+  holder     String
+  amount     String   // reward-token base units
+
+  batch      PayoutBatch @relation(fields: [batchId], references: [id])
+  @@index([holder])
+  @@index([batchId])
+}
+
+/// AES-256-GCM ciphertext for the automation-operator private key(s).
+/// The master key never touches this table; only ciphertext, IV, tag and
+/// key-version metadata. Rotation is a re-encrypt migration on this
+/// table.
+model EncryptedKey {
+  id          String   @id @default(cuid())
+  address     String   @unique     // the wallet the plaintext controls
+  purpose     String                // "operator" | "launch-wallet" | ...
+  keyVersion  Int                   // matches BANKPAD_MASTER_KEY_ID env
+  iv          Bytes                 // 12 bytes
+  ciphertext  Bytes
+  authTag     Bytes                 // 16 bytes
+  createdAt   DateTime @default(now())
+}

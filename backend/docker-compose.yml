@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bankpad
+      POSTGRES_PASSWORD: bankpad
+      POSTGRES_DB: bankpad
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "bankpad"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://bankpad:bankpad@postgres:5432/bankpad
+      REDIS_URL: redis://redis:6379
+      PORT: 8080
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    command: ["node", "--enable-source-maps", "dist/index.js"]
+
+  worker:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://bankpad:bankpad@postgres:5432/bankpad
+      REDIS_URL: redis://redis:6379
+    env_file:
+      - .env
+    command: ["node", "--enable-source-maps", "dist/workers/index.js"]
+
+volumes:
+  postgres-data:
+  redis-data:
