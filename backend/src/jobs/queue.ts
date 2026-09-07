@@ -17,10 +17,12 @@ function getRedis(): Redis {
 
 /** BullMQ queue names — kept as a const enum so job producers and workers
  * agree at compile time. */
+// Queue names must not contain ':' — BullMQ 5+ reserves it as the Redis key
+// namespace separator and refuses at construction time.
 export const QUEUES = {
-  ClaimFees: "bp:claim-fees",
-  BuyCurrency: "bp:buy-currency",
-  Distribute: "bp:distribute",
+  ClaimFees: "bp-claim-fees",
+  BuyCurrency: "bp-buy-currency",
+  Distribute: "bp-distribute",
 } as const;
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
 
