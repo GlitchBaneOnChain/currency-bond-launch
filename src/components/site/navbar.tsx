@@ -1,13 +1,8 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogOut, Menu, Wallet, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useAccount, useAuth } from "@/hooks/useAuth";
-import { signInWithWallet } from "@/lib/wallet-client";
-import { toast } from "sonner";
-import { currency } from "@/lib/market";
+import { WalletButton } from "@/components/site/wallet-button";
 import bankpadLogo from "@/assets/bankpad-green-logo.jpg.asset.json";
 
 const NAV = [
@@ -16,87 +11,9 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard" },
 ] as const;
 
-export function AccountButton({ full }: { full?: boolean }) {
-  const { user, loading } = useAuth();
-  const { data: account } = useAccount();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-
-  if (loading) return <div className={`h-9 ${full ? "w-full" : "w-28"} animate-pulse rounded-md bg-secondary/60`} />;
-
-  if (!user) {
-    return (
-      <Button
-        disabled={connecting}
-        onClick={async () => {
-          setConnecting(true);
-          try {
-            const { displayName } = await signInWithWallet();
-            toast.success(`Connected as ${displayName}`);
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : "Could not connect that wallet";
-            toast.error(msg);
-            if (msg.startsWith("No wallet found")) navigate({ to: "/auth" });
-          } finally {
-            setConnecting(false);
-          }
-        }}
-        className={`${full ? "w-full" : ""} bg-primary font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] hover:bg-primary`}
-      >
-        {connecting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Wallet className="mr-2 size-4" />}
-        Connect wallet
-      </Button>
-    );
-  }
-
-  const top = [...(account?.balances ?? [])].sort((a, b) => b.amount - a.amount)[0];
-
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
-
-  return (
-    <div className={`relative ${full ? "w-full" : ""}`}>
-      <Button
-        variant="outline"
-        className={`${full ? "w-full" : ""} border-primary/40 bg-primary/10 text-primary hover:bg-primary/20`}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <Wallet className="mr-2 size-4" />
-        <span className="num max-w-[130px] truncate text-xs">{account?.displayName ?? user.email}</span>
-      </Button>
-      {open && (
-        <div className="glass-panel absolute right-0 z-50 mt-2 w-60 rounded-xl border p-3 text-sm">
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-          {top && (
-            <p className="num mt-2 text-xs">
-              {currency(top.currency).flag} {currency(top.currency).symbol}
-              {top.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} available
-            </p>
-          )}
-          <Link
-            to="/dashboard"
-            onClick={() => setOpen(false)}
-            className="mt-3 block rounded-md px-2 py-2 hover:bg-secondary/60"
-          >
-            Your dashboard
-          </Link>
-          <button
-            onClick={signOut}
-            className="mt-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-          >
-            <LogOut className="size-4" /> Sign out
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+/** Backwards-compat re-export for any page that still imports AccountButton.
+ * The header now routes through the wagmi + RainbowKit `WalletButton`. */
+export { WalletButton as AccountButton };
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -127,7 +44,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <div className="hidden md:block">
-            <AccountButton />
+            <WalletButton />
           </div>
           <Button
             variant="ghost"
@@ -155,7 +72,7 @@ export function Navbar() {
               </Link>
             ))}
             <div className="mt-3">
-              <AccountButton full />
+              <WalletButton full />
             </div>
           </div>
         </div>
