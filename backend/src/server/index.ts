@@ -10,10 +10,10 @@ import { launchRoutes } from "./routes/launches.js";
 
 export async function buildServer() {
   const app = Fastify({
-    // Fastify's `logger` accepts a pino instance directly; the type
-    // assertion sidesteps the fact that Fastify's own LoggerOptions and
-    // pino's LoggerOptions have drifted slightly across versions.
-    logger: logger as never,
+    // Fastify v5 accepts a pre-built pino instance via `loggerInstance`;
+    // `logger` in v5 is strictly LoggerOptions. The cast keeps the pino
+    // type happy against Fastify's narrower FastifyBaseLogger surface.
+    loggerInstance: logger as never,
     trustProxy: true,
     bodyLimit: 256 * 1024,
   });
