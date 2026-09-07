@@ -6,7 +6,7 @@ more as their pools clear the depth floor). It's the [Ponks Family](https://pons
 model with the reward asset swapped from tokenized stocks to
 fiat-backed currency tokens.
 
-**Live:** https://bankpad.netlify.app
+**Live:** https://bankpad.fun (also https://bankpad.netlify.app)
 
 ## How it works
 

@@ -86,6 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Bankpad" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://bankpad.fun" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

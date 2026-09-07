@@ -22,7 +22,7 @@ export const wagmiConfig = getDefaultConfig({
   appName: "Bankpad",
   appDescription:
     "Launch memecoins that reward holders in real country currencies on Robinhood Chain.",
-  appUrl: "https://bankpad.netlify.app",
+  appUrl: "https://bankpad.fun",
   projectId,
   chains: [robinhoodChain],
   transports: {
