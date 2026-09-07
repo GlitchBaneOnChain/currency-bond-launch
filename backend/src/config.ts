@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+/** Treat empty-string env values as unset so `.optional()` on an EVM-address
+ * regex behaves the way operators expect. `.env` templates carry blank keys
+ * on purpose (fill in later); without this shim they hit the regex and the
+ * process refuses to boot. */
+const optionalAddress = z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z.string().regex(/^0x[a-fA-F0-9]{40}$/, "must be a valid EVM address").optional(),
+);
+
 /** Every env var the backend reads flows through this schema exactly once.
  *
  * If a value is missing or malformed the process exits at boot with a clear
@@ -19,10 +28,7 @@ const envSchema = z.object({
     .regex(/^[0-9a-fA-F]{64}$/, "BANKPAD_MASTER_KEY must be 32 hex bytes (64 chars)"),
   BANKPAD_MASTER_KEY_VERSION: z.coerce.number().int().min(1).default(1),
 
-  BANKPAD_OPERATOR_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, "BANKPAD_OPERATOR_ADDRESS must be an EVM address")
-    .optional(),
+  BANKPAD_OPERATOR_ADDRESS: optionalAddress,
 
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
   CORS_ORIGIN: z
