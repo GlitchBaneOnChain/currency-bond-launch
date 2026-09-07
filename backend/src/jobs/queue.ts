@@ -1,18 +1,18 @@
 import { Queue, QueueEvents, Worker, type Job } from "bullmq";
-import IORedis, { type Redis } from "ioredis";
+import { Redis } from "ioredis";
 import { config } from "../config.js";
 import { logger } from "../logger.js";
 
 let _redis: Redis | undefined;
 function getRedis(): Redis {
-  if (!_redis) {
-    _redis = new IORedis(config.REDIS_URL, {
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-    });
-    _redis.on("error", (err) => logger.error({ err }, "redis error"));
-  }
-  return _redis;
+  if (_redis) return _redis;
+  const r = new Redis(config.REDIS_URL, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  });
+  r.on("error", (err) => logger.error({ err }, "redis error"));
+  _redis = r;
+  return r;
 }
 
 /** BullMQ queue names — kept as a const enum so job producers and workers
@@ -76,7 +76,7 @@ export function makeWorker(
   const w = new Worker<ReserveLoopJob>(name, handler, {
     connection: getRedis(),
     concurrency: 4,
-    lockDuration: 60_000, // one worker holds the launch's lock for up to 60s
+    lockDuration: 60_000,
   });
   w.on("failed", (job, err) =>
     logger.error({ err, queue: name, jobId: job?.id, data: job?.data }, "job failed"),

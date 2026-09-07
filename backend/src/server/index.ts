@@ -10,14 +10,15 @@ import { launchRoutes } from "./routes/launches.js";
 
 export async function buildServer() {
   const app = Fastify({
-    logger,
+    // Fastify's `logger` accepts a pino instance directly; the type
+    // assertion sidesteps the fact that Fastify's own LoggerOptions and
+    // pino's LoggerOptions have drifted slightly across versions.
+    logger: logger as never,
     trustProxy: true,
-    bodyLimit: 256 * 1024, // 256 KB
+    bodyLimit: 256 * 1024,
   });
 
-  await app.register(helmet, {
-    contentSecurityPolicy: false, // API-only, no HTML shipped
-  });
+  await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cors, {
     origin: config.CORS_ORIGIN.length > 0 ? config.CORS_ORIGIN : true,
     credentials: false,
@@ -25,7 +26,7 @@ export async function buildServer() {
   });
   await app.register(rateLimit, {
     global: true,
-    max: 60, // 60 req/min per IP by default
+    max: 60,
     timeWindow: "1 minute",
   });
 

@@ -9,17 +9,15 @@ import type { Address, Hex, WalletClient } from "viem";
 export async function loadOperatorWallet(operatorAddress: Address): Promise<WalletClient> {
   const row = await db.encryptedKey.findUnique({ where: { address: operatorAddress } });
   if (!row) throw new Error(`No encrypted key on file for operator ${operatorAddress}`);
+  // Prisma returns Uint8Array for Bytes columns; the crypto module works in
+  // node Buffer. Wrap without copying (Buffer.from(Uint8Array) shares the
+  // underlying ArrayBuffer).
   const plaintext = decryptToString({
-    iv: row.iv,
-    ciphertext: row.ciphertext,
-    authTag: row.authTag,
+    iv: Buffer.from(row.iv),
+    ciphertext: Buffer.from(row.ciphertext),
+    authTag: Buffer.from(row.authTag),
     keyVersion: row.keyVersion,
   });
-  try {
-    if (!plaintext.startsWith("0x")) throw new Error("stored key is not 0x-prefixed hex");
-    return makeWalletClient(plaintext as Hex);
-  } finally {
-    // Best-effort scrub. V8 will still cache the string in the intern pool;
-    // treat this as belt-and-braces, not a guarantee.
-  }
+  if (!plaintext.startsWith("0x")) throw new Error("stored key is not 0x-prefixed hex");
+  return makeWalletClient(plaintext as Hex);
 }

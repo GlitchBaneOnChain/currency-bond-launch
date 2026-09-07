@@ -17,7 +17,7 @@ export type PoolChoice = {
   liquidity: bigint;
 };
 
-const FEE_TIERS = [500, 3_000, 10_000] as const;
+const FEE_TIERS: readonly number[] = [500, 3_000, 10_000];
 
 export async function findBestRewardPool(
   currency: RewardCurrencyDefinition,
@@ -26,8 +26,8 @@ export async function findBestRewardPool(
   const factory = config.UNISWAP_V3_FACTORY as Address;
   const weth = config.BANKPAD_WETH as Address;
 
-  const candidates = await Promise.all(
-    FEE_TIERS.map(async (fee) => {
+  const candidates: (PoolChoice | null)[] = await Promise.all(
+    FEE_TIERS.map(async (fee): Promise<PoolChoice | null> => {
       const pool = (await client.readContract({
         address: factory,
         abi: v3FactoryAbi,
@@ -40,11 +40,13 @@ export async function findBestRewardPool(
         abi: v3PoolAbi,
         functionName: "liquidity",
       })) as bigint;
-      return { address: pool, fee, liquidity } satisfies PoolChoice;
+      return { address: pool, fee, liquidity };
     }),
   );
 
-  const live = candidates.filter((c): c is PoolChoice => c !== null && c.liquidity > 0n);
+  const live: PoolChoice[] = candidates.filter(
+    (c): c is PoolChoice => c !== null && c.liquidity > 0n,
+  );
   if (live.length === 0) return undefined;
   live.sort((a, b) => (a.liquidity < b.liquidity ? 1 : -1));
   return live[0];
@@ -64,11 +66,9 @@ export function minOutFromSpot(
   wethIsToken0: boolean,
   slippageBps: number,
 ): bigint {
-  // spotPrice = (sqrtPriceX96 / 2^96)^2, denominated as token1-per-token0.
-  // We do the math in bigint to avoid float precision at large sqrtP values.
   const Q96 = 2n ** 96n;
   const numerator = sqrtPriceX96 * sqrtPriceX96;
-  const spot = numerator / (Q96 * Q96 / (10n ** 18n)); // scaled: 1e18 = 1.0
+  const spot = numerator / ((Q96 * Q96) / (10n ** 18n));
 
   const rawOut = wethIsToken0
     ? (amountIn * spot) / 10n ** 18n
