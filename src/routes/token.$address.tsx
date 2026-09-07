@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { OnChainStats } from "@/components/site/on-chain-stats";
 import { useMemo, useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -240,6 +241,15 @@ function TokenPage() {
             <Stat label="Reserve" value={`${c.symbol}${compact(token.reserve)}`} />
             <Stat label="Holders" value={compact(token.holders)} />
           </div>
+
+          {/* Live on-chain snapshot. Client-only because viem's public client
+              runs in the browser; the panel handles its own loading state. */}
+          <ClientOnly>
+            <OnChainStats
+              tokenAddress={token.address}
+              rewardCode={token.pair}
+            />
+          </ClientOnly>
 
           {/* About */}
           <div className="glass-panel rounded-2xl border p-5">
