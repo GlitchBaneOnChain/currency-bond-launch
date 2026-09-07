@@ -52,7 +52,22 @@ export type LaunchInput = {
   twitter: string;
   telegram: string;
   creatorTaxBps: number;
+  /** Address of the token deployed by the Pons V1 factory. Optional so
+   * the mock demo path still works while the real on-chain launch flow
+   * rolls out; when present it must be a checksummed 0x-hex-40 string. */
+  onChainAddress?: string;
+  /** Tx hash of the launchToken() call. Recorded for later explorer links
+   * and for the automation engine's per-launch state. */
+  launchTxHash?: string;
 };
+
+function isHexAddress(s: string): s is `0x${string}` {
+  return /^0x[a-fA-F0-9]{40}$/.test(s);
+}
+
+function isTxHash(s: string): boolean {
+  return /^0x[a-fA-F0-9]{64}$/.test(s);
+}
 
 export const launchToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -64,6 +79,12 @@ export const launchToken = createServerFn({ method: "POST" })
     if (!CURRENCY_CODES.includes(data.pair)) throw new Error("Pick a supported currency");
     const bps = Math.round(data.creatorTaxBps);
     if (bps < 0 || bps > 500) throw new Error("Creator tax must be between 0 and 5 percent");
+    if (data.onChainAddress !== undefined && !isHexAddress(data.onChainAddress)) {
+      throw new Error("On-chain address is not a valid EVM address");
+    }
+    if (data.launchTxHash !== undefined && !isTxHash(data.launchTxHash)) {
+      throw new Error("Launch tx hash must be a 0x-prefixed 32-byte hex string");
+    }
     return {
       name,
       ticker,
@@ -74,14 +95,17 @@ export const launchToken = createServerFn({ method: "POST" })
       twitter: data.twitter.trim(),
       telegram: data.telegram.trim(),
       creatorTaxBps: bps,
+      ...(data.onChainAddress ? { onChainAddress: data.onChainAddress } : {}),
+      ...(data.launchTxHash ? { launchTxHash: data.launchTxHash } : {}),
     };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const address = data.onChainAddress ?? randomAddress();
     const { data: row, error } = await supabase
       .from("tokens")
       .insert({
-        address: randomAddress(),
+        address,
         name: data.name,
         ticker: data.ticker,
         emoji: data.emoji,

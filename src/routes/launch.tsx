@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Globe, Info, Loader2, Send, Twitter } from "lucide-react";
+import { formatEther } from "viem";
+import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
+import { Globe, Info, Loader2, Send, Twitter, Wallet, AlertTriangle } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { CURRENCIES, currency, PROTOCOL_FEE_BPS, BASE_CREATOR_FEE_BPS } from "@/lib/market";
 import { launchToken } from "@/lib/account.functions";
-import { useAuth } from "@/hooks/useAuth";
+import { launchTokenTx, readLaunchFee } from "@/lib/pons/launch";
+import { isLaunchable } from "@/lib/registry/reward-currencies";
+import { robinhoodChain } from "@/lib/chain/robinhood-chain";
 
 export const Route = createFileRoute("/launch")({
   validateSearch: (search: Record<string, unknown>): { pair?: string } =>
@@ -41,45 +45,117 @@ function LaunchPage() {
   const [ticker, setTicker] = useState("");
   const [desc, setDesc] = useState("");
   const search = Route.useSearch();
-  const [pair, setPair] = useState(search.pair ?? "USD");
+  const initialPair = search.pair && isLaunchable(search.pair) ? search.pair : "USD";
+  const [pair, setPair] = useState(initialPair);
   const [tax, setTax] = useState(1);
   const [logo, setLogo] = useState("🏦");
   const [website, setWebsite] = useState("");
   const [twitter, setTwitter] = useState("");
   const [telegram, setTelegram] = useState("");
   const [busy, setBusy] = useState(false);
-  const { user, loading } = useAuth();
+  const [launchFeeEth, setLaunchFeeEth] = useState<string | null>(null);
+
+  const { address, isConnected, chainId } = useAccount();
+  const { data: walletClient } = useWalletClient({ chainId: robinhoodChain.id });
+  const { switchChainAsync } = useSwitchChain();
+  const onRightChain = chainId === robinhoodChain.id;
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const submit = useServerFn(launchToken);
 
   const c = currency(pair);
+  const currencyLaunchable = isLaunchable(pair);
+
+  // Load the current on-chain launch fee once the wallet is on the right chain.
+  useEffect(() => {
+    if (!onRightChain) return;
+    let alive = true;
+    readLaunchFee()
+      .then((wei) => {
+        if (alive) setLaunchFeeEth(formatEther(wei));
+      })
+      .catch(() => {
+        if (alive) setLaunchFeeEth(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [onRightChain]);
+
+  const formValid = useMemo(() => {
+    if (name.trim().length < 2 || name.trim().length > 40) return false;
+    if (!/^[A-Z0-9]{2,8}$/.test(ticker)) return false;
+    if (!currencyLaunchable) return false;
+    return true;
+  }, [name, ticker, currencyLaunchable]);
 
   async function handleLaunch() {
-    if (!user) {
-      navigate({ to: "/auth", search: { next: "/launch" } });
+    if (!isConnected || !address) {
+      toast.error("Connect your wallet to launch a coin");
       return;
     }
+    if (!currencyLaunchable) {
+      toast.error(`${pair} is not launchable yet. Pick a listed currency.`);
+      return;
+    }
+    if (!walletClient) {
+      toast.error("Wallet is not ready yet. Try again in a moment.");
+      return;
+    }
+    if (!onRightChain) {
+      try {
+        await switchChainAsync({ chainId: robinhoodChain.id });
+      } catch {
+        toast.error("Switch to Robinhood Chain to launch");
+        return;
+      }
+    }
+
     setBusy(true);
     try {
-      const res = await submit({
+      // 1. Ship the token through the Pons V1 factory. In self-custody mode
+      //    the creator's own wallet becomes the fee wallet; the automation
+      //    engine (Slice 5) will offer to accept the fee-wallet role later.
+      const onChain = await launchTokenTx(walletClient, {
+        name: name.trim(),
+        symbol: ticker.trim().toUpperCase(),
+        logo,
+        description: desc.trim().slice(0, 280),
+        socials: {
+          twitter: twitter.trim(),
+          telegram: telegram.trim(),
+          website: website.trim(),
+        },
+        feeWallet: address,
+        rewardCurrencyCode: pair,
+      });
+
+      // 2. Persist the off-chain metadata (creator tax, socials, emoji) so
+      //    Explore and Dashboard can render the launch. The address is the
+      //    real one the factory returned; no more mock.
+      await submit({
         data: {
-          name,
-          ticker,
+          name: name.trim(),
+          ticker: ticker.trim().toUpperCase(),
           emoji: logo,
           pair,
-          description: desc,
-          website,
-          twitter,
-          telegram,
+          description: desc.trim().slice(0, 280),
+          website: website.trim(),
+          twitter: twitter.trim(),
+          telegram: telegram.trim(),
           creatorTaxBps: Math.round(tax * 100),
+          onChainAddress: onChain.token,
+          launchTxHash: onChain.txHash,
         },
       });
+
       await queryClient.invalidateQueries();
-      toast.success(`${ticker} is live on the curve`);
-      navigate({ to: "/token/$address", params: { address: res.address } });
+      toast.success(`${ticker} is live on Robinhood Chain`);
+      navigate({ to: "/token/$address", params: { address: onChain.token } });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not launch that coin");
+      const msg = err instanceof Error ? err.message : "Could not launch that coin";
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -158,26 +234,39 @@ function LaunchPage() {
           <Panel title="Reward currency" step="02">
             <p className="-mt-2 mb-4 text-sm text-muted-foreground">
               Pick the national currency your holders earn as rewards. Every trade routes a share of the fees
-              back to holders, paid in this currency.
+              back to holders, paid in this currency. Only launchable currencies have a live reward-token
+              contract behind them.
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {CURRENCIES.map((cur) => (
-                <button
-                  key={cur.code}
-                  onClick={() => setPair(cur.code)}
-                  className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
-                    pair === cur.code
-                       ? "border-primary/60 bg-primary/10 shadow-[var(--shadow-vault)]"
-                       : "glass-control border-border hover:-translate-y-0.5 hover:border-primary/40"
-                  }`}
-                >
-                  <span className="text-xl">{cur.flag}</span>
-                  <span className="min-w-0">
-                    <span className="num block text-sm font-semibold">{cur.code}</span>
-                    <span className="block truncate text-[11px] text-muted-foreground">{cur.name}</span>
-                  </span>
-                </button>
-              ))}
+              {CURRENCIES.map((cur) => {
+                const live = isLaunchable(cur.code);
+                const selected = pair === cur.code;
+                return (
+                  <button
+                    key={cur.code}
+                    onClick={() => live && setPair(cur.code)}
+                    disabled={!live}
+                    className={`relative flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      selected
+                        ? "border-primary/60 bg-primary/10 shadow-[var(--shadow-vault)]"
+                        : live
+                          ? "glass-control border-border hover:-translate-y-0.5 hover:border-primary/40"
+                          : "glass-control border-border opacity-45"
+                    }`}
+                  >
+                    <span className="text-xl">{cur.flag}</span>
+                    <span className="min-w-0">
+                      <span className="num block text-sm font-semibold">{cur.code}</span>
+                      <span className="block truncate text-[11px] text-muted-foreground">{cur.name}</span>
+                    </span>
+                    {!live && (
+                      <span className="absolute right-2 top-2 rounded-full bg-secondary px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Soon
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </Panel>
 
@@ -228,7 +317,10 @@ function LaunchPage() {
                <Info className="size-4 text-primary" /> Fees
             </p>
             <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-              <FeeRow label="Launch fee" value="Free" />
+              <FeeRow
+                label="Launch fee"
+                value={launchFeeEth ? `${launchFeeEth} ETH` : "0.0005 ETH"}
+              />
               <FeeRow
                 label="Trading fee"
                 value={`${((PROTOCOL_FEE_BPS + BASE_CREATOR_FEE_BPS) / 100).toFixed(1)}%`}
@@ -288,9 +380,44 @@ function LaunchPage() {
             </div>
           </div>
 
+          {!isConnected ? (
+            <div className="glass-soft mt-5 flex items-start gap-3 rounded-xl border p-4 text-sm">
+              <Wallet className="mt-0.5 size-4 shrink-0 text-primary" />
+              <div>
+                <p className="font-semibold">Connect a wallet to launch</p>
+                <p className="text-xs text-muted-foreground">
+                  Launching signs one transaction on Robinhood Chain. Use the Connect wallet button in the top
+                  right, or from any page.
+                </p>
+              </div>
+            </div>
+          ) : !onRightChain ? (
+            <div className="mt-5 flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div>
+                <p className="font-semibold">Switch to Robinhood Chain</p>
+                <p className="text-xs opacity-90">
+                  Bankpad only launches on chain {robinhoodChain.id}. Click the network chip in your wallet
+                  to switch, or press Launch and we'll prompt you.
+                </p>
+              </div>
+            </div>
+          ) : !currencyLaunchable ? (
+            <div className="glass-soft mt-5 flex items-start gap-3 rounded-xl border p-4 text-sm">
+              <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+              <div>
+                <p className="font-semibold">Pick a launchable reward currency</p>
+                <p className="text-xs text-muted-foreground">
+                  {pair} is on the roster but its reward-token contract isn't live yet. USD (USDG) is the
+                  first launchable currency. More arrive as their pools clear the depth floor.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           <Button
             size="lg"
-            disabled={busy || loading}
+            disabled={busy || !formValid}
             onClick={handleLaunch}
             className="mt-5 w-full bg-[image:var(--gradient-primary)] text-base font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
           >
@@ -298,18 +425,20 @@ function LaunchPage() {
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" /> Launching your coin
               </>
-            ) : user ? (
-              `Launch ${ticker || "token"} with ${c.code} rewards`
-            ) : (
+            ) : !isConnected ? (
               "Connect wallet to launch"
+            ) : !onRightChain ? (
+              "Switch and launch"
+            ) : (
+              `Launch ${ticker || "token"} with ${c.code} rewards`
             )}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
             Liquidity locks automatically at graduation. You keep {tax.toFixed(1)}% creator tax plus your fee
             share.{" "}
-            {!user && (
+            {!isConnected && (
               <Link to="/auth" search={{ next: "/launch" }} className="text-primary hover:underline">
-                Create an account
+                Learn more
               </Link>
             )}
           </p>

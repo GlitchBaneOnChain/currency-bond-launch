@@ -1,36 +1,45 @@
 import type { Address } from "viem";
 
-/** A reward currency a creator can choose at launch time. Immutable per token.
+/** A reward currency a creator can pick at launch time. Immutable per token.
  *
- * Only tokens that have a verified deep pool against WETH/ETH on Robinhood
- * Chain's Uniswap deployment belong in this list. Never trust a client-supplied
- * reward token address; the launch UI and the backend both consult this
- * registry and the backend re-verifies pool depth before publishing a coin. */
+ * `code` is the display symbol (USD, EUR, GBP …) — the same taxonomy the
+ * marketing site uses. Under the hood each entry names the specific on-chain
+ * ERC-20 that holders actually receive: for USD that's Global Dollar (USDG).
+ *
+ * Only entries in this list are launchable. Anything you see on the site with
+ * no entry here is aspirational and disabled in the launch form; the launch
+ * page renders it with a "Coming soon" badge so the roster is honest. */
 export type RewardCurrencyDefinition = {
+  /** UI-facing code (USD, EUR, GBP …). */
   code: string;
-  name: string;
-  symbol: string;
-  flag: string;
+  /** Human-readable country name. */
   country: string;
+  /** Symbol prefix for prices (`$`, `€`, …). */
+  symbol: string;
+  /** Flag emoji. */
+  flag: string;
+  /** The reward token's on-chain symbol as it appears on the ERC-20 (USDG, …). */
+  tokenSymbol: string;
+  /** Human-readable name of the reward token. */
+  tokenName: string;
   /** ERC-20 address on Robinhood Chain (chain 4663). */
   address: Address;
-  /** ERC-20 decimals for the currency token. */
+  /** ERC-20 decimals. */
   decimals: number;
-  /** Human-readable minimum-depth requirement, in USD terms, for a launch to
-   * be allowed to select this currency. Enforced backend-side against live
-   * Uniswap reserves before the launch is accepted. */
+  /** Minimum WETH-paired liquidity depth (in USD terms) the reward-currency
+   * pool must clear before a launch is allowed to select this currency.
+   * Enforced backend-side against live Uniswap reserves at launch time. */
   minPoolDepthUsd: number;
 };
 
-/** Allowlisted reward currencies. Start with USDG; extend as more country
- * currencies get real Uniswap depth on Robinhood Chain. */
 export const REWARD_CURRENCIES: readonly RewardCurrencyDefinition[] = [
   {
-    code: "USDG",
-    name: "US Dollar (Global Dollar)",
+    code: "USD",
+    country: "United States",
     symbol: "$",
     flag: "🇺🇸",
-    country: "United States",
+    tokenSymbol: "USDG",
+    tokenName: "Global Dollar",
     address: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
     decimals: 6,
     minPoolDepthUsd: 25_000,
@@ -39,6 +48,13 @@ export const REWARD_CURRENCIES: readonly RewardCurrencyDefinition[] = [
 
 export function rewardCurrency(code: string): RewardCurrencyDefinition | undefined {
   return REWARD_CURRENCIES.find((c) => c.code === code);
+}
+
+/** True when a UI currency code has a launchable on-chain reward token
+ * behind it (the reward-currency registry names an ERC-20). The launch UI
+ * disables currencies where this is false. */
+export function isLaunchable(code: string): boolean {
+  return rewardCurrency(code) !== undefined;
 }
 
 /** Case-sensitive address lookup. Returns undefined for unlisted currencies. */
