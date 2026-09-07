@@ -18,6 +18,7 @@ import { launchToken } from "@/lib/account.functions";
 import { launchTokenTx, readLaunchFee } from "@/lib/pons/launch";
 import { isLaunchable } from "@/lib/registry/reward-currencies";
 import { robinhoodChain } from "@/lib/chain/robinhood-chain";
+import { registerLaunch } from "@/lib/api/backend";
 
 export const Route = createFileRoute("/launch")({
   validateSearch: (search: Record<string, unknown>): { pair?: string } =>
@@ -148,6 +149,28 @@ function LaunchPage() {
           onChainAddress: onChain.token,
           launchTxHash: onChain.txHash,
         },
+      });
+
+      // 3. Best-effort tell the backend so its automation loop starts
+      //    watching this launch. If the backend isn't wired in this env
+      //    the helper no-ops; the launch itself is already on chain.
+      void registerLaunch({
+        address: onChain.token,
+        name: name.trim(),
+        ticker: ticker.trim().toUpperCase(),
+        emoji: logo,
+        description: desc.trim().slice(0, 280),
+        rewardCurrencyCode: pair,
+        feeWallet: address,
+        poolAddress: onChain.pool,
+        lockerAddress: address, // creator serves as locker fallback until distributor lands
+        positionId: onChain.positionId.toString(),
+        launchTxHash: onChain.txHash,
+        creatorAddress: address,
+        creatorTaxBps: Math.round(tax * 100),
+        website: website.trim() || undefined,
+        twitter: twitter.trim() || undefined,
+        telegram: telegram.trim() || undefined,
       });
 
       await queryClient.invalidateQueries();

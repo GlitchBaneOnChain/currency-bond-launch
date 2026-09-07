@@ -5,29 +5,17 @@ import { logger } from "../logger.js";
 import { getPublicClient } from "../chain/clients.js";
 import { distributorAbi, launcherTokenAbi } from "../pons/abis.js";
 import { config } from "../config.js";
+import { loadOperatorWallet } from "../lib/operator.js";
 import type { ReserveLoopJob } from "./queue.js";
 
 /** Every ~10 minutes (staggered off the buy job): distribute the parked
  * reward-token balance to eligible holders.
  *
- * The holder snapshot is not yet indexed by this repo — a proper indexer
- * job that folds `Transfer` events into a `Holder` table is Slice 5b.
- * For now the job:
- *   1. Reads `pendingRewards` on the distributor. If zero, no-op.
- *   2. Reads the token's holder set from Transfer events since genesis.
- *      This is O(events) and only tolerable for small launches; the
- *      indexer replaces it with an O(1) DB read.
- *   3. Filters via `distributor.isEligible(holder)` on-chain and calls
- *      `distribute(holders)` with the passing set.
- *
- * The broadcast is stubbed the same way as claim-fees for now; the
- * simulate + eligibility scan runs every tick so we know the loop
- * would fire cleanly. */
+ * Holder discovery is still an O(events) scan over the token's Transfer
+ * log; swap for the indexer's Holder table when that lands. */
 export async function distributeJob(job: Job<ReserveLoopJob>): Promise<void> {
   if (config.BANKPAD_PAUSE) return;
-  const launch = await db.launch.findUnique({
-    where: { address: job.data.launchAddress },
-  });
+  const launch = await db.launch.findUnique({ where: { address: job.data.launchAddress } });
   if (!launch) throw new Error(`Unknown launch ${job.data.launchAddress}`);
   if (launch.paused) return;
   if (!launch.distributor) return;
@@ -41,21 +29,12 @@ export async function distributeJob(job: Job<ReserveLoopJob>): Promise<void> {
     abi: distributorAbi,
     functionName: "pendingRewards",
   })) as bigint;
-  if (pending === 0n) {
-    logger.debug({ launch: launch.address }, "no rewards pending; skip distribute");
-    return;
-  }
+  if (pending === 0n) return;
 
-  // Naive scan for the first cut. Replace with the indexer's `Holder`
-  // table read once Slice 5b lands.
   const holders = await scanTransferHolders(token);
-  if (holders.length === 0) {
-    logger.warn({ launch: launch.address }, "no holders found; skip distribute");
-    return;
-  }
+  if (holders.length === 0) return;
 
-  // On-chain eligibility filter. `isEligible` costs one storage read per
-  // call — cheap enough for the first cut.
+  // On-chain eligibility filter. Batched to keep RPC round-trips down.
   const eligible: Address[] = [];
   for (const h of holders) {
     const ok = (await publicClient.readContract({
@@ -66,33 +45,87 @@ export async function distributeJob(job: Job<ReserveLoopJob>): Promise<void> {
     })) as boolean;
     if (ok) eligible.push(h);
   }
-  if (eligible.length === 0) {
-    logger.warn({ launch: launch.address }, "no eligible holders; skip distribute");
+  if (eligible.length === 0) return;
+
+  const { request } = await publicClient.simulateContract({
+    address: distributor,
+    abi: distributorAbi,
+    functionName: "distribute",
+    args: [eligible],
+    account: config.BANKPAD_OPERATOR_ADDRESS as Address,
+  });
+
+  if (!config.BANKPAD_OPERATOR_ADDRESS) {
+    logger.info(
+      { launch: launch.address, pending: pending.toString(), holders: eligible.length },
+      "would broadcast distribute (no operator address configured)",
+    );
     return;
   }
 
-  try {
-    await publicClient.simulateContract({
-      address: distributor,
-      abi: distributorAbi,
-      functionName: "distribute",
-      args: [eligible],
-    });
-  } catch (err) {
-    logger.error(
-      { err, launch: launch.address, distributor, holders: eligible.length },
-      "distribute simulation reverted",
-    );
-    throw err;
+  const wallet = await loadOperatorWallet(config.BANKPAD_OPERATOR_ADDRESS as Address).catch(
+    (err) => {
+      logger.error({ err, launch: launch.address }, "operator wallet load failed");
+      return undefined;
+    },
+  );
+  if (!wallet) return;
+
+  const txHash = await wallet.writeContract(request);
+  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+  // Balance snapshot so the DB payout rows carry each holder's share.
+  const supply = (await publicClient.readContract({
+    address: token,
+    abi: launcherTokenAbi,
+    functionName: "totalSupply",
+  })) as bigint;
+  const balances = await Promise.all(
+    eligible.map(
+      (h) =>
+        publicClient.readContract({
+          address: token,
+          abi: launcherTokenAbi,
+          functionName: "balanceOf",
+          args: [h],
+        }) as Promise<bigint>,
+    ),
+  );
+  const eligibleTotal = balances.reduce((a, b) => a + b, 0n);
+
+  const batch = await db.payoutBatch.create({
+    data: {
+      launchId: launch.id,
+      txHash,
+      totalPaid: pending.toString(),
+      eligibleCount: eligible.length,
+      eligibleSupply: eligibleTotal.toString(),
+      blockNumber: receipt.blockNumber,
+    },
+  });
+
+  // One Payout row per holder for the UI's dividend history. Batched.
+  const rows = eligible.map((holder, i) => {
+    const bal = balances[i] ?? 0n;
+    const share = eligibleTotal === 0n ? 0n : (pending * bal) / eligibleTotal;
+    return { batchId: batch.id, holder, amount: share.toString() };
+  });
+  if (rows.length > 0) {
+    await db.payout.createMany({ data: rows });
   }
 
   logger.info(
-    { launch: launch.address, distributor, pending: pending.toString(), holders: eligible.length },
-    "would broadcast distribute",
+    {
+      launch: launch.address,
+      txHash,
+      pending: pending.toString(),
+      holders: eligible.length,
+      totalSupply: supply.toString(),
+    },
+    "distribute broadcast",
   );
 }
 
-/** O(events) holder scan. Kept isolated so the indexer swap is one file. */
 async function scanTransferHolders(token: Address): Promise<Address[]> {
   const publicClient = getPublicClient();
   const logs = await publicClient.getLogs({

@@ -42,16 +42,16 @@ const envSchema = z.object({
 
   UNISWAP_V3_NFPM: z
     .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, "UNISWAP_V3_NFPM must be an EVM address")
-    .optional(),
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .default("0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3"),
   UNISWAP_V3_SWAP_ROUTER: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/)
-    .optional(),
+    .default("0xcaf681a66D020601342297493863e78c959E5cB2"),
   UNISWAP_V3_FACTORY: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/)
-    .optional(),
+    .default("0x1f7d7550B1b028f7571E69A784071F0205FD2EfA"),
 });
 
 const parsed = envSchema.safeParse(process.env);

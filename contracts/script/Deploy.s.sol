@@ -36,8 +36,12 @@ import {IWETH} from "../src/interfaces/IWETH.sol";
 ///                       confirmed.
 ///   BANKPAD_SWAPROUTER  no default; same as above.
 contract Deploy is Script {
-    // Robinhood Chain canonicals. Everything else must be provided.
+    // Robinhood Chain canonicals — the Uniswap V3 deployment for chain 4663
+    // (see https://github.com/Uniswap/contracts/blob/main/deployments/4663.md).
+    // Verified against blockscout before use.
     address constant DEFAULT_WETH = 0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73;
+    address constant DEFAULT_NFPM = 0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3;
+    address constant DEFAULT_SWAP_ROUTER = 0xcaf681a66D020601342297493863e78c959E5cB2;
 
     function run() external returns (BankpadDistributor distributor) {
         address ownerAddr = vm.envAddress("BANKPAD_OWNER");
@@ -48,8 +52,8 @@ contract Deploy is Script {
         address lockerAddr = vm.envAddress("BANKPAD_LOCKER");
         uint256 posId = vm.envUint("BANKPAD_POSITION_ID");
         address wethAddr = vm.envOr("BANKPAD_WETH", DEFAULT_WETH);
-        address nfpmAddr = vm.envAddress("BANKPAD_NFPM");
-        address swapRouterAddr = vm.envAddress("BANKPAD_SWAPROUTER");
+        address nfpmAddr = vm.envOr("BANKPAD_NFPM", DEFAULT_NFPM);
+        address swapRouterAddr = vm.envOr("BANKPAD_SWAPROUTER", DEFAULT_SWAP_ROUTER);
 
         vm.startBroadcast(vm.envUint("DEPLOYER_KEY"));
         distributor = new BankpadDistributor(
