@@ -30,7 +30,7 @@ export function TokenCard({ token }: { token: TokenView }) {
             )}
           </div>
           <p className="num text-xs text-muted-foreground">
-            {token.ticker} / {c.code} · {timeAgo(token.createdAt)}
+            {token.ticker} · rewards in {c.code} · {timeAgo(token.createdAt)}
           </p>
         </div>
         <span className={`num text-sm font-semibold ${up ? "text-success" : "text-destructive"}`}>

@@ -19,7 +19,7 @@ export const Route = createFileRoute("/dashboard")({
       {
         name: "description",
         content:
-          "Track the coins you launched on Bankpad, claim creator fees in their paired country currency, and follow your positions.",
+          "Track the coins you launched on Bankpad, claim creator fees in the country currency your holders earn, and follow your positions.",
       },
       { property: "og:title", content: "Your Bankpad dashboard" },
       { property: "og:description", content: "Your launches, balances, positions and claimable fees." },
@@ -214,7 +214,7 @@ function LaunchRow({ token }: { token: TokenView }) {
       <div className="min-w-[140px] flex-1">
         <p className="font-semibold">{token.name}</p>
         <p className="num text-xs text-muted-foreground">
-          {token.ticker} / {c.code} ·{" "}
+          {token.ticker} · rewards in {c.code} ·{" "}
           {token.graduated ? "Graduated" : `${token.progress.toFixed(1)}% on curve`}
         </p>
       </div>

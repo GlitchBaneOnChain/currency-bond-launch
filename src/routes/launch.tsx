@@ -24,12 +24,12 @@ export const Route = createFileRoute("/launch")({
       {
         name: "description",
         content:
-          "Mint your coin on Bankpad in under a minute: pick a national currency pair, set a creator tax, and open the bonding curve.",
+          "Mint your coin on Bankpad in under a minute: pick a national reward currency, set a creator tax, and let holders earn.",
       },
       { property: "og:title", content: "Launch a token on Bankpad" },
       {
         property: "og:description",
-        content: "Pick a country currency, set your creator tax, and launch on the bonding curve.",
+        content: "Pick a country currency, set your creator tax, and pay holders rewards in real money.",
       },
     ],
   }),
@@ -93,8 +93,8 @@ function LaunchPage() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <h1 className="text-3xl font-bold sm:text-4xl">Open a new coin</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Every Bankpad coin trades against a real national currency. Fill in the paperwork, and the vault
-            handles the rest.
+            Every Bankpad coin pays its holders in a real national currency. Fill in the paperwork, and the
+            vault handles the rest.
           </p>
         </div>
       </section>
@@ -155,9 +155,10 @@ function LaunchPage() {
             </Field>
           </Panel>
 
-          <Panel title="Currency pair" step="02">
+          <Panel title="Reward currency" step="02">
             <p className="-mt-2 mb-4 text-sm text-muted-foreground">
-              Choose the national currency your coin trades against.
+              Pick the national currency your holders earn as rewards. Every trade routes a share of the fees
+              back to holders, paid in this currency.
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {CURRENCIES.map((cur) => (
@@ -258,7 +259,7 @@ function LaunchPage() {
               <div className="min-w-0">
                 <p className="truncate text-lg font-semibold">{name || "Your token name"}</p>
                 <p className="num text-xs text-muted-foreground">
-                  {ticker || "TICKER"} / {c.code}
+                  {ticker || "TICKER"} · rewards in {c.code} {c.symbol}
                 </p>
               </div>
             </div>
@@ -298,7 +299,7 @@ function LaunchPage() {
                 <Loader2 className="mr-2 size-4 animate-spin" /> Launching your coin
               </>
             ) : user ? (
-              `Launch ${ticker || "token"} / ${c.code}`
+              `Launch ${ticker || "token"} with ${c.code} rewards`
             ) : (
               "Connect wallet to launch"
             )}

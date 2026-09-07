@@ -29,7 +29,7 @@ export const Route = createFileRoute("/explore")({
       { property: "og:title", content: "Explore launches on Bankpad" },
       {
         property: "og:description",
-        content: "Filter all Bankpad tokens by currency pair, graduation status and volume.",
+        content: "Filter all Bankpad tokens by reward currency, graduation status and volume.",
       },
     ],
   }),

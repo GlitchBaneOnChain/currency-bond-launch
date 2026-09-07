@@ -40,8 +40,8 @@ export const Route = createFileRoute("/token/$address")({
       return { meta: [{ title: "Coin unavailable on Bankpad" }, { name: "robots", content: "noindex" }] };
     }
     const t = loaderData.token;
-    const title = `${t.name} (${t.ticker} / ${t.pair}) on Bankpad`;
-    const description = t.description || `${t.name} trades against ${t.pair} on the Bankpad bonding curve.`;
+    const title = `${t.name} (${t.ticker}) rewards holders in ${t.pair} on Bankpad`;
+    const description = t.description || `${t.name} pays its holders rewards in ${t.pair}. Trade the bonding curve on Bankpad.`;
     return {
       meta: [
         { title },
@@ -139,7 +139,7 @@ function TokenPage() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold sm:text-3xl">{token.name}</h1>
               <span className="num rounded-md bg-secondary px-2 py-0.5 text-xs">
-                {token.ticker} / {c.code}
+                {token.ticker} · rewards in {c.code}
               </span>
               {token.graduated ? (
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">

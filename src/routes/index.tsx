@@ -22,16 +22,16 @@ export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   head: () => ({
     meta: [
-      { title: "Bankpad, launch coins paired with real country currencies" },
+      { title: "Bankpad, launch coins that reward holders in real country currencies" },
       {
         name: "description",
         content:
-          "Bankpad is the memecoin launchpad on Robinhood Chain where every token is paired with a real country currency: USD, EUR, GBP, JPY, INR and more.",
+          "Bankpad is the memecoin launchpad on Robinhood Chain where every token pays its holders rewards in a real country currency: USD, EUR, GBP, JPY, INR and more.",
       },
-      { property: "og:title", content: "Bankpad, launch coins paired with real country currencies" },
+      { property: "og:title", content: "Bankpad, launch coins that reward holders in real country currencies" },
       {
         property: "og:description",
-        content: "Bonding curve to locked liquidity. Every coin paired to a national currency.",
+        content: "Bonding curve to locked liquidity. Every coin pays holders rewards in the national currency you pick.",
       },
     ],
   }),
@@ -82,14 +82,14 @@ function Home() {
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-6xl">
-              Launch coins paired with <span className="brand-text">real country currencies</span>
+              Launch coins that reward holders in <span className="brand-text">real country currencies</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-              Bankpad is a launchpad built like a bank. Pick a national currency, mint your coin, and let the
-              bonding curve do the rest.
+              Bankpad is a launchpad built like a bank. Pick a national currency, mint your coin, and every
+              trade pays your holders rewards in that currency.
             </p>
             <p className="mx-auto mt-4 max-w-md text-sm text-primary/90">
-              Spin the globe, point to a country, then click it to launch or explore its currency pair.
+              Spin the globe, point to a country, then click it to launch a coin that rewards holders in its currency.
             </p>
             <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
@@ -128,26 +128,26 @@ function Home() {
       <section className="section-glow mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <h2 className="text-center text-3xl font-bold sm:text-4xl">How Bankpad works</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-          Three steps from an idea to a liquid market denominated in the currency you choose.
+          Three steps from an idea to a coin that pays its holders in the currency you choose.
         </p>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           <Step
             icon={<Coins className="size-5" />}
             step="01"
-            title="Pick a currency and mint"
-            body="Name your coin, choose its national currency pair, set an optional creator tax, and open it to traders."
+            title="Pick a reward currency and mint"
+            body="Name your coin, choose the national currency your holders earn, set an optional creator tax, and open the curve."
           />
           <Step
             icon={<TrendingUp className="size-5" />}
             step="02"
-            title="Trade the bonding curve"
-            body="Price rises along a transparent curve as buyers arrive. Every trade routes fees back to you, the creator."
+            title="Holders earn on every trade"
+            body="Each buy and sell routes a share of the fees back to holders, paid in your chosen national currency."
           />
           <Step
             icon={<Lock className="size-5" />}
             step="03"
             title="Graduate to a locked pool"
-            body="At full curve, liquidity locks into the paired currency pool. Nobody can pull it."
+            body="At full curve, liquidity locks into a Uniswap V4 pool. Nobody can pull it. Rewards keep flowing."
           />
         </div>
       </section>
@@ -156,7 +156,7 @@ function Home() {
       <section className="border-y border-border/60 bg-vault/70 py-14 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-center text-sm font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-            Available currency pairs
+            Reward currencies your holders can earn
           </h2>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             {CURRENCIES.map((c) => (
@@ -219,8 +219,8 @@ function Home() {
           <div className="relative">
             <h2 className="text-3xl font-bold sm:text-4xl">Open your branch on Bankpad</h2>
             <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-              Launch in under a minute. Keep a share of every trade, in the currency your community actually
-              uses.
+              Launch in under a minute. Pay your holders rewards in the currency their community actually
+              uses, and keep a creator cut on every trade.
             </p>
             <Button
               asChild
