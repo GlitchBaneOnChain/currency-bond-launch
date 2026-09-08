@@ -18,12 +18,17 @@ contract BankpadDistributorTest is Test {
     address constant DEAD = 0x000000000000000000000000000000000000dEaD;
     address owner = makeAddr("owner");
     address operator = makeAddr("operator");
+    address creatorWallet = makeAddr("creator");
     address pool = makeAddr("pool");
     address locker = makeAddr("locker");
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
     address whale = makeAddr("whale");
     address stranger = makeAddr("stranger");
+
+    uint256 constant CREATOR_FEE_BPS = 200; // 2%
+    address constant PLATFORM_WALLET = 0xefEFd65A24120A61c96cfbA1A8DC861fAC03C3c7;
+    uint256 constant PLATFORM_FEE_BPS = 100; // 1%
 
     MockERC20 meme;
     MockERC20 reward;
@@ -45,6 +50,8 @@ contract BankpadDistributorTest is Test {
         distributor = new BankpadDistributor(
             owner,
             operator,
+            creatorWallet,
+            CREATOR_FEE_BPS,
             IERC20(address(meme)),
             IERC20(address(reward)),
             IWETH(address(weth)),
@@ -85,6 +92,8 @@ contract BankpadDistributorTest is Test {
         new BankpadDistributor(
             owner,
             address(0),
+            creatorWallet,
+            CREATOR_FEE_BPS,
             IERC20(address(meme)),
             IERC20(address(reward)),
             IWETH(address(weth)),
@@ -100,13 +109,17 @@ contract BankpadDistributorTest is Test {
                                 CLAIM AND BURN
     //////////////////////////////////////////////////////////////////////////*/
 
-    function test_claimAndBurn_burnsMemeKeepsWeth() public {
+    function test_claimAndBurn_burnsMemeSplitsWeth() public {
         // Pre-fund the NFPM so its collect() has something to transfer.
         meme.mint(address(nfpm), 1_000e18);
         vm.deal(address(this), 5 ether);
         weth.deposit{value: 5 ether}();
         weth.transfer(address(nfpm), 5 ether);
         nfpm.setOwed(1_000e18, 5 ether);
+
+        uint256 expectedPlatform = (5 ether * PLATFORM_FEE_BPS) / 10_000;
+        uint256 expectedCreator = (5 ether * CREATOR_FEE_BPS) / 10_000;
+        uint256 expectedRewardPool = 5 ether - expectedPlatform - expectedCreator;
 
         vm.prank(stranger); // permissionless
         (uint256 burned, uint256 wethIn) = distributor.claimAndBurn();
@@ -115,7 +128,9 @@ contract BankpadDistributorTest is Test {
         assertEq(wethIn, 5 ether);
         assertEq(meme.balanceOf(DEAD), 1_000e18);
         assertEq(meme.balanceOf(address(distributor)), 0);
-        assertEq(weth.balanceOf(address(distributor)), 5 ether);
+        assertEq(weth.balanceOf(PLATFORM_WALLET), expectedPlatform);
+        assertEq(weth.balanceOf(creatorWallet), expectedCreator);
+        assertEq(weth.balanceOf(address(distributor)), expectedRewardPool);
         assertEq(distributor.totalBurned(), 1_000e18);
     }
 

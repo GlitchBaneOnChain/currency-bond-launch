@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { currency, compact, tokenPrice, timeAgo, type TokenView } from "@/lib/market";
+import { TokenImage } from "@/components/site/token-image";
 
 export function TokenCard({ token }: { token: TokenView }) {
   const c = currency(token.pair);
@@ -13,8 +14,8 @@ export function TokenCard({ token }: { token: TokenView }) {
     >
       <div className="flex items-start gap-3">
         <div className="relative">
-          <span className="glass-soft flex size-12 items-center justify-center rounded-lg border text-2xl transition-transform duration-300 group-hover:scale-105">
-            {token.emoji}
+          <span className="glass-soft flex size-12 items-center justify-center overflow-hidden rounded-lg border text-2xl transition-transform duration-300 group-hover:scale-105">
+            <TokenImage src={token.emoji} alt={token.name} textClassName="size-5" />
           </span>
           <span className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border border-border bg-background text-xs">
             {c.flag}

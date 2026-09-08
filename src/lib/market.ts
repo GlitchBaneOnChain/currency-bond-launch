@@ -31,8 +31,10 @@ export function currency(code: string): Currency {
 export const CURVE_TARGET = 5000;
 export const CURVE_SUPPLY = 800_000_000;
 export const TOTAL_SUPPLY = 1_000_000_000;
-export const PROTOCOL_FEE_BPS = 40;
-export const BASE_CREATOR_FEE_BPS = 60;
+/** @deprecated Use PLATFORM_FEE_BPS from @/lib/registry/fees instead. */
+export const PROTOCOL_FEE_BPS = 100;
+/** @deprecated Use DEFAULT_CREATOR_FEE_BPS from @/lib/registry/fees instead. */
+export const BASE_CREATOR_FEE_BPS = 100;
 
 export type TokenView = {
   id: string;

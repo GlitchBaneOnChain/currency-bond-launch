@@ -11,6 +11,7 @@ import { compact, currency, exactMoney, tokenPrice, toTokenView, type TokenView 
 import { listTokens } from "@/lib/market.functions";
 import { claimFees } from "@/lib/account.functions";
 import { useAccount, useAuth } from "@/hooks/useAuth";
+import { TokenImage } from "@/components/site/token-image";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -129,8 +130,8 @@ function Dashboard() {
                       params={{ address: token.address }}
                       className="glass-panel flex items-center gap-4 rounded-2xl border p-4 transition-all hover:border-primary/35"
                     >
-                      <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-xl">
-                        {token.emoji}
+                      <span className="flex size-11 items-center justify-center overflow-hidden rounded-lg bg-secondary text-xl">
+                        <TokenImage src={token.emoji} alt={token.name} textClassName="size-5" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold">{token.name}</p>
@@ -204,8 +205,8 @@ function LaunchRow({ token }: { token: TokenView }) {
   return (
     <div className="glass-panel flex flex-wrap items-center gap-4 rounded-2xl border p-4 transition-all hover:border-primary/35 hover:shadow-[var(--shadow-glow)] sm:p-5">
       <div className="relative">
-        <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-2xl">
-          {token.emoji}
+        <span className="flex size-12 items-center justify-center overflow-hidden rounded-lg bg-secondary text-2xl">
+          <TokenImage src={token.emoji} alt={token.name} textClassName="size-6" />
         </span>
         <span className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border border-border bg-background text-xs">
           {c.flag}

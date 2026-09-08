@@ -15,6 +15,15 @@ import { reportError } from "../lib/error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Web3Provider } from "@/lib/wagmi/provider";
+import { useAutoDashboardRedirect } from "@/hooks/useAutoDashboardRedirect";
+
+/** Renders nothing — it just hosts the redirect effect. Kept as its own
+ * component so the hook can safely use wagmi context (which only exists
+ * inside `Web3Provider`). */
+function AutoDashboardRedirectBoundary() {
+  useAutoDashboardRedirect();
+  return null;
+}
 
 function NotFoundComponent() {
   return (
@@ -145,6 +154,7 @@ function RootComponent() {
       <ClientOnly fallback={<Outlet />}>
         <Web3Provider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <AutoDashboardRedirectBoundary />
           <Outlet />
         </Web3Provider>
       </ClientOnly>

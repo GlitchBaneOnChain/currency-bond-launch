@@ -8,6 +8,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 import { Globe, Loader2, Lock, Send, Twitter } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
+import { TokenImage } from "@/components/site/token-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -129,8 +130,8 @@ function TokenPage() {
       <section className="section-glow border-b border-border/60 bg-vault/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-5 px-4 py-8 sm:px-6">
           <div className="relative">
-            <span className="flex size-16 items-center justify-center rounded-2xl bg-secondary text-4xl">
-              {token.emoji}
+            <span className="flex size-16 items-center justify-center overflow-hidden rounded-2xl bg-secondary text-4xl">
+              <TokenImage src={token.emoji} alt={token.name} textClassName="size-8" />
             </span>
             <span className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border border-border bg-background text-sm">
               {c.flag}
@@ -327,7 +328,9 @@ function TokenPage() {
                 </span>
               </div>
               <div className="glass-control flex items-center gap-2 rounded-xl border border-border px-3">
-                <span className="text-lg">{side === "buy" ? c.flag : token.emoji}</span>
+                <span className="flex size-5 items-center justify-center overflow-hidden text-lg">
+                  {side === "buy" ? c.flag : <TokenImage src={token.emoji} alt="" textClassName="text-lg" />}
+                </span>
                 <Input
                   value={amount}
                   onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}

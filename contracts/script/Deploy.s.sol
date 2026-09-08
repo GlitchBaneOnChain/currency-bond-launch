@@ -28,6 +28,8 @@ import {IWETH} from "../src/interfaces/IWETH.sol";
 ///   BANKPAD_POOL         Uniswap V3 pool holding the token / WETH pair.
 ///   BANKPAD_LOCKER       Pons LP locker address for this launch.
 ///   BANKPAD_POSITION_ID  NFPM tokenId of the locked LP position.
+///   BANKPAD_CREATOR      Wallet the creator's per-trade fee routes to.
+///   BANKPAD_CREATOR_BPS  Creator fee in basis points, 0 to 500 (5%).
 ///
 /// Optional (fall back to Robinhood Chain canonicals):
 ///   BANKPAD_WETH        default: 0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73
@@ -54,11 +56,15 @@ contract Deploy is Script {
         address wethAddr = vm.envOr("BANKPAD_WETH", DEFAULT_WETH);
         address nfpmAddr = vm.envOr("BANKPAD_NFPM", DEFAULT_NFPM);
         address swapRouterAddr = vm.envOr("BANKPAD_SWAPROUTER", DEFAULT_SWAP_ROUTER);
+        address creatorAddr = vm.envAddress("BANKPAD_CREATOR");
+        uint256 creatorBps = vm.envUint("BANKPAD_CREATOR_BPS");
 
         vm.startBroadcast(vm.envUint("DEPLOYER_KEY"));
         distributor = new BankpadDistributor(
             ownerAddr,
             operatorAddr,
+            creatorAddr,
+            creatorBps,
             IERC20(tokenAddr),
             IERC20(rewardAddr),
             IWETH(wethAddr),

@@ -5,7 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { formatEther } from "viem";
 import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
-import { Globe, Info, Loader2, Send, Twitter, Wallet, AlertTriangle } from "lucide-react";
+import { Globe, ImagePlus, Info, Loader2, Send, Trash2, Twitter, Wallet, AlertTriangle } from "lucide-react";
+import { readAndCompressImage } from "@/lib/upload";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { CURRENCIES, currency, PROTOCOL_FEE_BPS, BASE_CREATOR_FEE_BPS } from "@/lib/market";
+import { CURRENCIES, currency } from "@/lib/market";
+import { PLATFORM_FEE_BPS, MAX_CREATOR_FEE_BPS, totalTradingFeeBps, formatBps } from "@/lib/registry/fees";
 import { launchToken } from "@/lib/account.functions";
 import { launchTokenTx, readLaunchFee } from "@/lib/pons/launch";
 import { isLaunchable } from "@/lib/registry/reward-currencies";
@@ -49,7 +51,8 @@ function LaunchPage() {
   const initialPair = search.pair && isLaunchable(search.pair) ? search.pair : "USD";
   const [pair, setPair] = useState(initialPair);
   const [tax, setTax] = useState(1);
-  const [logo, setLogo] = useState("🏦");
+  const [image, setImage] = useState<string>("");
+  const [imageBusy, setImageBusy] = useState(false);
   const [website, setWebsite] = useState("");
   const [twitter, setTwitter] = useState("");
   const [telegram, setTelegram] = useState("");
@@ -121,7 +124,7 @@ function LaunchPage() {
       const onChain = await launchTokenTx(walletClient, {
         name: name.trim(),
         symbol: ticker.trim().toUpperCase(),
-        logo,
+        logo: image,
         description: desc.trim().slice(0, 280),
         socials: {
           twitter: twitter.trim(),
@@ -139,7 +142,7 @@ function LaunchPage() {
         data: {
           name: name.trim(),
           ticker: ticker.trim().toUpperCase(),
-          emoji: logo,
+          emoji: image,
           pair,
           description: desc.trim().slice(0, 280),
           website: website.trim(),
@@ -230,27 +233,27 @@ function LaunchPage() {
               />
               <p className="num mt-1 text-right text-[11px] text-muted-foreground">{desc.length}/280</p>
             </Field>
-            <Field label="Logo">
-              <div className="flex items-center gap-4">
-                <div className="glass-control flex size-16 items-center justify-center rounded-xl border border-dashed text-3xl">
-                  {logo}
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-wrap gap-1.5">
-                    {["🏦", "🐸", "🐕", "🚀", "💷", "🦁", "🍣", "🥖"].map((e) => (
-                      <button
-                        key={e}
-                        onClick={() => setLogo(e)}
-                        className={`size-9 rounded-lg border text-lg transition-colors ${
-                          logo === e ? "border-primary bg-primary/15" : "border-border bg-secondary/50"
-                        }`}
-                      >
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <Field label="Image">
+              <ImageUploader
+                image={image}
+                busy={imageBusy}
+                onPick={async (file) => {
+                  setImageBusy(true);
+                  try {
+                    const dataUrl = await readAndCompressImage(file);
+                    setImage(dataUrl);
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Could not read that image");
+                  } finally {
+                    setImageBusy(false);
+                  }
+                }}
+                onClear={() => setImage("")}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                PNG, JPEG, WebP or GIF. Resized to 512px and compressed on your device before
+                it leaves your browser.
+              </p>
             </Field>
           </Panel>
 
@@ -293,7 +296,7 @@ function LaunchPage() {
             </div>
           </Panel>
 
-          <Panel title="Links and creator tax" step="03">
+          <Panel title="Links and creator fee" step="03">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Website">
                 <Input
@@ -320,17 +323,18 @@ function LaunchPage() {
                 />
               </Field>
             </div>
-            <Field label={`Creator tax: ${tax.toFixed(1)}%`}>
+            <Field label={`Your creator fee: ${tax.toFixed(1)}%`}>
               <Slider
                 value={[tax]}
                 onValueChange={(v) => setTax(v[0] ?? 0)}
                 min={0}
-                max={5}
+                max={MAX_CREATOR_FEE_BPS / 100}
                 step={0.5}
                 className="mt-3"
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Optional. Taken on each trade and paid to you in {c.flag} {c.code}.
+                Taken on each buy and sell on top of Bankpad's 1% platform fee, paid to you in{" "}
+                {c.flag} {c.code}. Set to 0% for a fee-free launch.
               </p>
             </Field>
           </Panel>
@@ -339,20 +343,29 @@ function LaunchPage() {
             <p className="flex items-center gap-2 text-sm font-semibold">
                <Info className="size-4 text-primary" /> Fees
             </p>
-            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <FeeRow
                 label="Launch fee"
                 value={launchFeeEth ? `${launchFeeEth} ETH` : "0.0005 ETH"}
               />
               <FeeRow
-                label="Trading fee"
-                value={`${((PROTOCOL_FEE_BPS + BASE_CREATOR_FEE_BPS) / 100).toFixed(1)}%`}
+                label="Bankpad platform fee"
+                value={formatBps(PLATFORM_FEE_BPS)}
               />
               <FeeRow
-                label="Split"
-                value={`${BASE_CREATOR_FEE_BPS / 10}0% creator / ${PROTOCOL_FEE_BPS / 10}0% protocol`}
+                label="Your creator fee"
+                value={`${tax.toFixed(1)}%`}
+              />
+              <FeeRow
+                label="Total per trade"
+                value={formatBps(totalTradingFeeBps(Math.round(tax * 100)))}
               />
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Every buy and sell pays 1% to Bankpad forever, plus your chosen{" "}
+              {tax.toFixed(1)}% creator fee. Your fee is paid to you in {c.code}; the platform fee
+              routes to the launchpad treasury.
+            </p>
           </div>
         </div>
 
@@ -364,8 +377,12 @@ function LaunchPage() {
           <div className="glass-panel overflow-hidden rounded-2xl border p-5">
             <div className="flex items-start gap-3">
               <div className="relative">
-                <span className="flex size-14 items-center justify-center rounded-xl bg-secondary text-3xl">
-                  {logo}
+                <span className="flex size-14 items-center justify-center overflow-hidden rounded-xl bg-secondary text-3xl">
+                  {image ? (
+                    <img src={image} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <ImagePlus className="size-6 text-muted-foreground" />
+                  )}
                 </span>
                 <span className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border border-border bg-background text-xs">
                   {c.flag}
@@ -457,8 +474,8 @@ function LaunchPage() {
             )}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Liquidity locks automatically at graduation. You keep {tax.toFixed(1)}% creator tax plus your fee
-            share.{" "}
+            Liquidity locks automatically at graduation. Every trade pays 1% to Bankpad and{" "}
+            {tax.toFixed(1)}% to you in {c.code}.{" "}
             {!isConnected && (
               <Link to="/auth" search={{ next: "/launch" }} className="text-primary hover:underline">
                 Learn more
@@ -499,6 +516,67 @@ function FeeRow({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg bg-secondary/60 px-3 py-2">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="num text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function ImageUploader({
+  image,
+  busy,
+  onPick,
+  onClear,
+}: {
+  image: string;
+  busy: boolean;
+  onPick: (file: File) => void;
+  onClear: () => void;
+}) {
+  const inputId = "bankpad-launch-image";
+  return (
+    <div className="flex items-center gap-4">
+      <label
+        htmlFor={inputId}
+        className="glass-control relative flex size-24 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed text-muted-foreground transition-all hover:border-primary/40 hover:text-primary"
+      >
+        {busy ? (
+          <Loader2 className="size-5 animate-spin" />
+        ) : image ? (
+          <img src={image} alt="Launch image" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-1 text-center">
+            <ImagePlus className="size-6" />
+            <span className="text-[10px] uppercase tracking-wide">Upload</span>
+          </div>
+        )}
+      </label>
+      <div className="flex flex-1 flex-col gap-2">
+        <label
+          htmlFor={inputId}
+          className="glass-control inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-all hover:border-primary/40"
+        >
+          <ImagePlus className="size-4" /> Choose image
+        </label>
+        {image && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="inline-flex items-center gap-2 self-start text-xs text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="size-3.5" /> Remove
+          </button>
+        )}
+      </div>
+      <input
+        id={inputId}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) onPick(file);
+        }}
+      />
     </div>
   );
 }

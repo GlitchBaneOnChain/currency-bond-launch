@@ -1,7 +1,7 @@
 import { a as __toESM } from "../_runtime.mjs";
 import { h as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { o as require_jsx_runtime, r as Slot, s as require_react } from "../_libs/@radix-ui/react-collection+[...].mjs";
-import { i as TriangleAlert, l as Menu, n as Wallet, t as X } from "../_libs/lucide-react.mjs";
+import { i as TriangleAlert, n as Wallet, t as X, u as Menu } from "../_libs/lucide-react.mjs";
 import { Y as defineChain, j as init__esm, lt as clsx, t as ConnectButton } from "../_libs/@rainbow-me/rainbowkit+[...].mjs";
 import { t as cva } from "../_libs/class-variance-authority.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";

@@ -54,6 +54,22 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
     /// @notice Canonical burn sink for the memecoin portion of collected fees.
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
 
+    /// @notice Bankpad's own take on every fee collection. 1% of the WETH
+    /// side of collected fees always routes to {@link PLATFORM_WALLET}. This
+    /// value is intentionally a `constant`: no admin, no owner and no operator
+    /// can change or waive it. The launchpad's share is baked into the code.
+    uint256 public constant PLATFORM_FEE_BPS = 100;
+
+    /// @notice Where Bankpad's platform fee goes. Immutable. Documented at
+    /// the app level in `src/lib/registry/fees.ts` so on-chain and off-chain
+    /// stay in sync.
+    address public constant PLATFORM_WALLET = 0xefEFd65A24120A61c96cfbA1A8DC861fAC03C3c7;
+
+    /// @notice Upper bound on the creator's per-launch fee. Set high enough
+    /// to give creators meaningful revenue, low enough to keep predatory
+    /// launches off Bankpad. 5% = 500bps.
+    uint256 public constant MAX_CREATOR_FEE_BPS = 500;
+
     /// @notice A holder counts as an eligible reward recipient only if they
     /// own <= `MAX_ELIGIBLE_BPS` of total supply. 4% = 400bps out of 10_000.
     uint256 public constant MAX_ELIGIBLE_BPS = 400;
@@ -96,6 +112,16 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
     /// @notice The launch's chosen reward currency (e.g. USDG). Immutable.
     IERC20 public immutable rewardToken;
 
+    /// @notice The creator's own wallet. Receives the creator fee on every
+    /// fee collection. Set once at deploy time and never changes.
+    address public immutable creatorWallet;
+
+    /// @notice The creator's per-trade fee, in basis points. Capped by
+    /// {@link MAX_CREATOR_FEE_BPS}. Set once at deploy time and never
+    /// changes: creators cannot rug their own holders by raising the fee
+    /// after launch, and Bankpad cannot raise it either.
+    uint256 public immutable creatorFeeBps;
+
     /*//////////////////////////////////////////////////////////////////////////
                                 MUTABLE STATE
     //////////////////////////////////////////////////////////////////////////*/
@@ -127,6 +153,8 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
     event OperatorUpdated(address indexed previous, address indexed next);
     event PausedUpdated(bool paused);
     event FeesClaimed(uint256 memeAmount, uint256 wethAmount, uint256 burned);
+    event PlatformFeePaid(address indexed platformWallet, uint256 wethAmount);
+    event CreatorFeePaid(address indexed creatorWallet, uint256 wethAmount);
     event RewardsBought(
         uint256 wethIn, uint256 rewardsOut, uint256 amountOutMin, uint24 fee
     );
@@ -152,26 +180,33 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
     error InsufficientWeth();
     error InsufficientReward();
     error ZeroAddress();
+    error CreatorFeeTooHigh(uint256 provided, uint256 max);
 
     /*//////////////////////////////////////////////////////////////////////////
                                     SETUP
     //////////////////////////////////////////////////////////////////////////*/
 
-    /// @param _owner        Address that will be able to set the operator and
-    ///                      pause. Meant to be the creator's own wallet or a
-    ///                      timelocked multisig; can be renounced.
-    /// @param _operator     Automation engine hot wallet.
-    /// @param _token        The launched meme token (Pons V1 launcher token).
-    /// @param _rewardToken  Reward currency ERC-20 chosen at launch (e.g. USDG).
-    /// @param _weth         Wrapped ETH on Robinhood Chain.
-    /// @param _positionMgr  Uniswap V3 NonfungiblePositionManager holding LP.
-    /// @param _swapRouter   Uniswap V3 SwapRouter for WETH -> reward swaps.
-    /// @param _pool         The token/WETH V3 pool. Ineligible for rewards.
-    /// @param _locker       Pons LP locker. Ineligible for rewards.
-    /// @param _positionId   NFPM tokenId of the locked LP position.
+    /// @param _owner          Address that will be able to set the operator and
+    ///                        pause. Meant to be the creator's own wallet or a
+    ///                        timelocked multisig; can be renounced.
+    /// @param _operator       Automation engine hot wallet.
+    /// @param _creatorWallet  Wallet that receives the creator fee on every
+    ///                        collection. Usually the launcher's own address.
+    /// @param _creatorFeeBps  Creator's per-trade fee in bps, 0 to
+    ///                        {@link MAX_CREATOR_FEE_BPS}. Immutable.
+    /// @param _token          The launched meme token (Pons V1 launcher token).
+    /// @param _rewardToken    Reward currency ERC-20 chosen at launch (e.g. USDG).
+    /// @param _weth           Wrapped ETH on Robinhood Chain.
+    /// @param _positionMgr    Uniswap V3 NonfungiblePositionManager holding LP.
+    /// @param _swapRouter     Uniswap V3 SwapRouter for WETH -> reward swaps.
+    /// @param _pool           The token/WETH V3 pool. Ineligible for rewards.
+    /// @param _locker         Pons LP locker. Ineligible for rewards.
+    /// @param _positionId     NFPM tokenId of the locked LP position.
     constructor(
         address _owner,
         address _operator,
+        address _creatorWallet,
+        uint256 _creatorFeeBps,
         IERC20 _token,
         IERC20 _rewardToken,
         IWETH _weth,
@@ -183,6 +218,7 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
     ) Ownable(_owner) {
         if (_owner == address(0)) revert ZeroAddress();
         if (_operator == address(0)) revert ZeroAddress();
+        if (_creatorWallet == address(0)) revert ZeroAddress();
         if (address(_token) == address(0)) revert ZeroAddress();
         if (address(_rewardToken) == address(0)) revert ZeroAddress();
         if (address(_weth) == address(0)) revert ZeroAddress();
@@ -190,6 +226,9 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
         if (address(_swapRouter) == address(0)) revert ZeroAddress();
         if (_pool == address(0)) revert ZeroAddress();
         if (_locker == address(0)) revert ZeroAddress();
+        if (_creatorFeeBps > MAX_CREATOR_FEE_BPS) {
+            revert CreatorFeeTooHigh(_creatorFeeBps, MAX_CREATOR_FEE_BPS);
+        }
 
         token = _token;
         rewardToken = _rewardToken;
@@ -199,6 +238,8 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
         pool = _pool;
         locker = _locker;
         positionId = _positionId;
+        creatorWallet = _creatorWallet;
+        creatorFeeBps = _creatorFeeBps;
 
         operator = _operator;
         emit OperatorUpdated(address(0), _operator);
@@ -232,12 +273,15 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
                                     REWARD LOOP
     //////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice Sweep the V3 position's accrued fees to this contract, then
-    /// burn every memecoin token that arrived. WETH stays parked for the
-    /// next `buyRewards` call.
+    /// @notice Sweep the V3 position's accrued fees to this contract, split
+    /// the WETH side into Bankpad's 1% platform fee and the creator's fee,
+    /// then burn every memecoin token that arrived. The remaining WETH stays
+    /// parked for the next `buyRewards` call.
     ///
-    /// @dev Permissionless. The only destination for the memecoin portion is
-    /// `DEAD`; nobody profits from calling this except the reward loop.
+    /// @dev Permissionless. The only destinations for the memecoin portion
+    /// is `DEAD`; nobody profits from calling this except the reward loop.
+    /// The platform + creator fees are always paid from the WETH side so the
+    /// deflationary story (all memecoin fees burnt) stays intact.
     function claimAndBurn() external nonReentrant returns (uint256 burned, uint256 wethIn) {
         if (paused) revert Paused();
         uint256 memeBefore = token.balanceOf(address(this));
@@ -264,6 +308,22 @@ contract BankpadDistributor is Ownable2Step, ReentrancyGuard {
         if (memeGained > 0) {
             token.safeTransfer(DEAD, memeGained);
             totalBurned += memeGained;
+        }
+
+        // Pay the launchpad and the creator their cut from the WETH side.
+        // Compute both up front so a rounding-down platform share can never
+        // steal from the creator's share, and vice versa.
+        if (wethGained > 0) {
+            uint256 platformShare = (wethGained * PLATFORM_FEE_BPS) / BPS_DENOM;
+            uint256 creatorShare = (wethGained * creatorFeeBps) / BPS_DENOM;
+            if (platformShare > 0) {
+                weth.safeTransfer(PLATFORM_WALLET, platformShare);
+                emit PlatformFeePaid(PLATFORM_WALLET, platformShare);
+            }
+            if (creatorShare > 0) {
+                weth.safeTransfer(creatorWallet, creatorShare);
+                emit CreatorFeePaid(creatorWallet, creatorShare);
+            }
         }
 
         emit FeesClaimed(memeGained, wethGained, memeGained);
