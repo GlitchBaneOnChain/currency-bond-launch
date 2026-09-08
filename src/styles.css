@@ -276,8 +276,14 @@
 }
 
 
-/* Hide Netlify-injected branding badge */
+/* Hide Netlify-injected branding badge (iframe + any wrapper the edge injects) */
 #nl-badge-frame,
-#nl-badge {
+#nl-badge,
+#netlify-badge,
+[id^="nl-badge"],
+[class*="netlify-badge"] {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
