@@ -65,19 +65,21 @@ function Home() {
       </div>
 
       {/* Hero */}
-      <section className="vault-surface section-glow relative min-h-[780px] overflow-hidden md:min-h-[860px]">
+      <section className="vault-surface section-glow relative overflow-hidden">
         <div className="grid-ledger absolute inset-0 opacity-60" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[55%] opacity-90 md:h-[52%]">
-          <ClientOnly>
-            <Suspense fallback={null}>
-              <div className="pointer-events-auto absolute inset-0">
-                <CurrencyGlobe tokens={tokens} />
-              </div>
-            </Suspense>
-          </ClientOnly>
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-10 pt-40 sm:px-6 md:pb-14 md:pt-44 lg:pb-16">
-          <div className="animate-rise mx-auto max-w-3xl text-center">
+        <div className="relative flex flex-col items-center pt-6 pb-14 md:pt-10 md:pb-20">
+          {/* Globe */}
+          <div className="pointer-events-none relative h-[340px] w-full sm:h-[420px] md:h-[500px] lg:h-[560px]">
+            <ClientOnly>
+              <Suspense fallback={null}>
+                <div className="pointer-events-auto absolute inset-0">
+                  <CurrencyGlobe tokens={tokens} />
+                </div>
+              </Suspense>
+            </ClientOnly>
+          </div>
+          {/* Text */}
+          <div className="animate-rise mx-auto mt-8 max-w-3xl px-4 text-center sm:px-6 md:mt-12">
             <span className="glass-soft inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
               <Landmark className="size-3.5 text-primary" /> Now open on Robinhood Chain
             </span>
@@ -91,7 +93,7 @@ function Home() {
             <p className="mx-auto mt-4 max-w-md text-sm text-primary/90">
               Spin the globe, point to a country, then click it to launch a coin that rewards holders in its currency.
             </p>
-            <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 asChild
                 size="lg"
