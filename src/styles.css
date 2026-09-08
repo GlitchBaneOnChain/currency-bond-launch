@@ -274,3 +274,10 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Hide Netlify-injected branding badge */
+#nl-badge-frame,
+#nl-badge {
+  display: none !important;
+}
