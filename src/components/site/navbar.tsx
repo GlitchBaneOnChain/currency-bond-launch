@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "@/components/site/wallet-button";
-import bankpadLogo from "@/assets/bankpad-green-logo.jpg.asset.json";
+import { BankpadLogo } from "@/components/site/bankpad-logo";
 
 const NAV = [
   { to: "/launch", label: "Launch" },
@@ -21,8 +21,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/45 shadow-[inset_0_-1px_0_oklch(1_0_0/6%),0_12px_40px_-28px_oklch(0.02_0.02_264/85%)] backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center">
-          <img src={bankpadLogo.url} alt="Bankpad" className="h-10 w-auto max-w-[190px] object-contain sm:max-w-[220px]" />
+        <Link to="/" className="flex items-center gap-2">
+          <BankpadLogo size="md" />
           <span className="ml-1 hidden rounded-full border border-border bg-card/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
             Robinhood Chain
           </span>

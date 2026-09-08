@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowUpRight, Loader2, Plus } from "lucide-react";
+import { useAccount as useWagmiAccount } from "wagmi";
+import { ArrowUpRight, Loader2, Plus, Wallet } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -30,9 +31,10 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, signingIn, signInError, retrySignIn } = useAuth();
   const { data: account, isLoading } = useAccount();
   const { data: market } = useQuery({ queryKey: ["tokens"], queryFn: () => listTokens() });
+  const wagmi = useWagmiAccount();
 
   const myTokens = (account?.myTokens ?? []).map(toTokenView);
   const allTokens = (market?.tokens ?? []).map(toTokenView);
@@ -65,7 +67,7 @@ function Dashboard() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        {!user && !loading ? (
+        {!user && !loading && !wagmi.isConnected ? (
           <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
             <p className="text-lg font-semibold">Connect your wallet to open your dashboard</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
@@ -78,6 +80,37 @@ function Dashboard() {
               <Link to="/auth" search={{ next: "/dashboard" }}>
                 Connect wallet
               </Link>
+            </Button>
+          </div>
+        ) : !user && !loading && wagmi.isConnected ? (
+          <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
+            <p className="text-lg font-semibold">
+              {signingIn ? "Sign the message in your wallet" : "One quick signature to open your dashboard"}
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              {signingIn
+                ? "Approve the sign-in request from your wallet. Nothing moves, this is just proof it's you."
+                : "Bankpad asks your wallet to sign a free message so nobody else can open your dashboard. Click below if you missed the prompt."}
+            </p>
+            {signInError && (
+              <p className="mx-auto mt-3 max-w-md text-xs text-destructive">{signInError}</p>
+            )}
+            <Button
+              onClick={retrySignIn}
+              disabled={signingIn}
+              className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
+            >
+              {signingIn ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Waiting for signature
+                </>
+              ) : (
+                <>
+                  <Wallet className="mr-2 size-4" />
+                  Sign in with wallet
+                </>
+              )}
             </Button>
           </div>
         ) : isLoading || loading ? (

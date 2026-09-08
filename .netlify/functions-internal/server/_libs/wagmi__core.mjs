@@ -1,4 +1,4 @@
-import { B as createClient, G as ConnectorNotConnectedError, H as ChainNotConfiguredError, J as init_utils, K as ConnectorUnavailableReconnectingError, L as walletActions, P as custom, U as ConnectorAccountNotFoundError, W as ConnectorChainMismatchError, at as getAddress, j as init__esm, k as deepEqual, nt as parseAccount, q as BaseError, u as filterQueryOptions } from "./@rainbow-me/rainbowkit+[...].mjs";
+import { B as createClient, G as ConnectorNotConnectedError, H as ChainNotConfiguredError, J as getAction, K as ConnectorUnavailableReconnectingError, L as walletActions, P as custom, U as ConnectorAccountNotFoundError, W as ConnectorChainMismatchError, X as signMessage$1, Y as init_signMessage, Z as init_utils, at as parseAccount, ct as getAddress, j as init__esm, k as deepEqual, q as BaseError, u as filterQueryOptions } from "./@rainbow-me/rainbowkit+[...].mjs";
 //#region node_modules/@wagmi/core/dist/esm/actions/getConnectorClient.js
 init__esm();
 init_utils();
@@ -61,6 +61,23 @@ function getChains(config) {
 init__esm();
 async function getWalletClient(config, parameters = {}) {
 	return (await getConnectorClient(config, parameters)).extend(walletActions);
+}
+//#endregion
+//#region node_modules/@wagmi/core/dist/esm/actions/signMessage.js
+init_signMessage();
+/** https://wagmi.sh/core/api/actions/signMessage */
+async function signMessage(config, parameters) {
+	const { account, connector, ...rest } = parameters;
+	let client;
+	if (typeof account === "object" && account.type === "local") client = config.getClient();
+	else client = await getConnectorClient(config, {
+		account,
+		connector
+	});
+	return getAction(client, signMessage$1, "signMessage")({
+		...rest,
+		...account ? { account } : {}
+	});
 }
 //#endregion
 //#region node_modules/@wagmi/core/dist/esm/errors/connector.js
@@ -144,4 +161,4 @@ function switchChainMutationOptions(config) {
 	};
 }
 //#endregion
-export { getChains as i, getWalletClientQueryOptions as n, watchChains as r, switchChainMutationOptions as t };
+export { getChains as a, signMessage as i, getWalletClientQueryOptions as n, watchChains as r, switchChainMutationOptions as t };

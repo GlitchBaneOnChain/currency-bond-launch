@@ -1,7 +1,7 @@
 import { a as __toESM } from "../_runtime.mjs";
 import { s as require_react } from "./@radix-ui/react-collection+[...].mjs";
 import { D as useAccount, O as useConfig, i as useMutation, l as useQueryClient, n as useChainId, r as useQuery } from "./@rainbow-me/rainbowkit+[...].mjs";
-import { i as getChains, n as getWalletClientQueryOptions, r as watchChains, t as switchChainMutationOptions } from "./wagmi__core.mjs";
+import { a as getChains, n as getWalletClientQueryOptions, r as watchChains, t as switchChainMutationOptions } from "./wagmi__core.mjs";
 //#region node_modules/wagmi/dist/esm/hooks/useChains.js
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 /** https://wagmi.sh/react/api/hooks/useChains */

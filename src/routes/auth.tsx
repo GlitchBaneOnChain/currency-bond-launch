@@ -10,6 +10,7 @@ import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { useAuth } from "@/hooks/useAuth";
 import { signInWithWallet } from "@/lib/wallet-client";
+import { useAccount as useWagmiAccount, useConfig as useWagmiConfig } from "wagmi";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -44,11 +45,20 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
   const [walletBusy, setWalletBusy] = useState(false);
+  const wagmiAccount = useWagmiAccount();
+  const wagmiConfig = useWagmiConfig();
 
   async function connectWallet() {
+    if (!wagmiAccount.isConnected || !wagmiAccount.address) {
+      toast.error("Connect your wallet from the top-right first, then sign in here.");
+      return;
+    }
     setWalletBusy(true);
     try {
-      const { displayName } = await signInWithWallet();
+      const { displayName } = await signInWithWallet({
+        config: wagmiConfig,
+        address: wagmiAccount.address,
+      });
       toast.success(`Connected as ${displayName}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not connect that wallet");

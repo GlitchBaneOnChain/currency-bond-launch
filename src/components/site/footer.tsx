@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import bankpadLogo from "@/assets/bankpad-green-logo.jpg.asset.json";
+import { BankpadLogo } from "@/components/site/bankpad-logo";
 
 export function Footer() {
   return (
     <footer className="border-t border-border/60 bg-background/40 backdrop-blur-2xl">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
-          <img src={bankpadLogo.url} alt="Bankpad" className="h-10 w-auto max-w-[220px] object-contain" />
+          <BankpadLogo size="lg" />
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             The launchpad where every coin is paired with a real country currency. Built on Robinhood Chain.
           </p>
