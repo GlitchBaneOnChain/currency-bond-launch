@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useAccount as useWagmiAccount } from "wagmi";
-import { ArrowUpRight, Loader2, Plus, Wallet } from "lucide-react";
+import { ArrowUpRight, Loader2, Plus } from "lucide-react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -31,10 +31,13 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { user, loading, signingIn, signInError, retrySignIn } = useAuth();
-  const { data: account, isLoading } = useAccount();
+  useAuth(); // keep the Supabase subscription warm; do not gate the dashboard on it
+  const { data: account } = useAccount();
   const { data: market } = useQuery({ queryKey: ["tokens"], queryFn: () => listTokens() });
   const wagmi = useWagmiAccount();
+  const shortAddress = wagmi.address
+    ? `${wagmi.address.slice(0, 6)}…${wagmi.address.slice(-4)}`
+    : "";
 
   const myTokens = (account?.myTokens ?? []).map(toTokenView);
   const allTokens = (market?.tokens ?? []).map(toTokenView);
@@ -55,7 +58,9 @@ function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">Your dashboard</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {user ? account?.displayName ?? "Signed in" : "Connect your wallet to see your launches and positions"}
+              {wagmi.isConnected
+                ? `Connected as ${account?.displayName ?? shortAddress}`
+                : "Connect your wallet to see your launches and positions"}
             </p>
           </div>
           <Button asChild className="bg-primary font-semibold text-primary-foreground">
@@ -67,55 +72,16 @@ function Dashboard() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        {!user && !loading && !wagmi.isConnected ? (
+        {!wagmi.isConnected ? (
           <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
             <p className="text-lg font-semibold">Connect your wallet to open your dashboard</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               Your launches, balances, positions and creator fees all live here.
             </p>
-            <Button
-              asChild
-              className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
-            >
-              <Link to="/auth" search={{ next: "/dashboard" }}>
-                Connect wallet
-              </Link>
-            </Button>
-          </div>
-        ) : !user && !loading && wagmi.isConnected ? (
-          <div className="glass-soft rounded-2xl border border-dashed p-12 text-center">
-            <p className="text-lg font-semibold">
-              {signingIn ? "Sign the message in your wallet" : "One quick signature to open your dashboard"}
+            <p className="mx-auto mt-6 text-xs text-muted-foreground">
+              Use the <span className="font-semibold text-foreground">Connect wallet</span> button in the
+              top-right — no email, no extra sign-in.
             </p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              {signingIn
-                ? "Approve the sign-in request from your wallet. Nothing moves, this is just proof it's you."
-                : "Bankpad asks your wallet to sign a free message so nobody else can open your dashboard. Click below if you missed the prompt."}
-            </p>
-            {signInError && (
-              <p className="mx-auto mt-3 max-w-md text-xs text-destructive">{signInError}</p>
-            )}
-            <Button
-              onClick={retrySignIn}
-              disabled={signingIn}
-              className="mt-6 bg-[image:var(--gradient-primary)] font-semibold text-primary-foreground"
-            >
-              {signingIn ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Waiting for signature
-                </>
-              ) : (
-                <>
-                  <Wallet className="mr-2 size-4" />
-                  Sign in with wallet
-                </>
-              )}
-            </Button>
-          </div>
-        ) : isLoading || loading ? (
-          <div className="flex justify-center py-20 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin" />
           </div>
         ) : (
           <>
