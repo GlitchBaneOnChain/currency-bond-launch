@@ -56,8 +56,11 @@ export function useAuth(): AuthState {
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Could not sign in with wallet";
         setSignInError(msg);
-        // Reset so a retry (or the user picking a different wallet) fires again.
-        attemptedAddress.current = null;
+        // Deliberately DO NOT clear attemptedAddress here — otherwise the
+        // useEffect below would re-fire the moment `signingIn` flips back
+        // to false and spam the wallet with signature prompts forever. The
+        // user can rerun the flow themselves via `retrySignIn` (the Sign-in
+        // button on protected pages).
       } finally {
         setSigningIn(false);
       }
